@@ -13,7 +13,7 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
-package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
+package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects;
 
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
 

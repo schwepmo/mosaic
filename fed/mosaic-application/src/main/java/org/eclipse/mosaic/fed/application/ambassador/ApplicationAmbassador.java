@@ -596,6 +596,8 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
     }
 
     private void process(final TrafficLightUpdates trafficLightUpdates) {
+        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().updateTrafficLights(trafficLightUpdates);
+
         for (TrafficLightGroupUnit simulationUnit : UnitSimulator.UnitSimulator.getTrafficLights().values()) {
             TrafficLightGroupInfo trafficLightGroupInfo =
                     trafficLightUpdates.getUpdated().get(simulationUnit.getTrafficLightGroup().getGroupId());
@@ -610,7 +612,6 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
                 addEvent(event);
             }
         }
-
     }
 
     private void process(final VehicleUpdates vehicleUpdates) {

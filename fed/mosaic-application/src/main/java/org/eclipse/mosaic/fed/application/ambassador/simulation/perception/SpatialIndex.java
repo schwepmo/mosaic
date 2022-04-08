@@ -15,31 +15,34 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * A {@link SpatialVehicleIndex} is a representation of space using a special data structure.
+ * A {@link SpatialIndex} is a representation of space using a special data structure.
  * The goal is to allow for efficient querying of nearby entities.
  */
-public interface SpatialVehicleIndex {
+public interface SpatialIndex {
 
     /**
-     * Queries the {@link SpatialVehicleIndex} and returns all vehicles inside the {@link PerceptionRange}
-     * e.
+     * Queries the {@link SpatialIndex} and returns all vehicles inside the {@link PerceptionRange}.
      */
     List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange);
 
     /**
-     * Remove all vehicles from the {@link SpatialVehicleIndex} by a list of vehicle ids.
+     * Remove all vehicles from the {@link SpatialIndex} by a list of vehicle ids.
      *
      * @param vehiclesToRemove the list of vehicles to remove from the index
      */
     void removeVehicles(Iterable<String> vehiclesToRemove);
 
     /**
-     * Updates the {@link SpatialVehicleIndex} with a list of {@link VehicleData} objects.
+     * Updates the {@link SpatialIndex} with a list of {@link VehicleData} objects.
      *
      * @param vehiclesToUpdate the list of vehicles to add or update in the index
      */
@@ -51,4 +54,16 @@ public interface SpatialVehicleIndex {
      * @return the number of vehicles
      */
     int getNumberOfVehicles();
+
+    /**
+     * Queries the {@link SpatialIndex} and returns all traffic lights inside the {@link PerceptionRange}.
+     */
+    List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange);
+
+    /**
+     * Updates the {@link SpatialIndex} with a list of {@link TrafficLightGroupInfo} objects.
+     *
+     * @param trafficLightsToUpdate a list of information packages transmitted by the traffic simulator
+     */
+    void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate);
 }

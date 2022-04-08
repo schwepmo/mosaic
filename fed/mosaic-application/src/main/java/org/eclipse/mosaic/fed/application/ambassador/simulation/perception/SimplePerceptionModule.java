@@ -18,6 +18,9 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 import static java.lang.Math.toRadians;
 
 import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.api.perception.PerceptionModule;
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
 import org.eclipse.mosaic.lib.math.MathUtils;
@@ -36,6 +39,9 @@ import java.util.List;
  * No occlusion or error model is considered. The field of view is defined with an opening angle of maximum 180 degrees.
  */
 public class SimplePerceptionModule implements PerceptionModule<SimplePerceptionConfiguration> {
+    private static final double DEFAULT_VIEWING_ANGLE = 40;
+    private static final double DEFAULT_VIEWING_RANGE = 200;
+
 
     private final PerceptionModuleOwner owner;
     private final Logger log;
@@ -50,8 +56,9 @@ public class SimplePerceptionModule implements PerceptionModule<SimplePerception
     @Override
     public void enable(SimplePerceptionConfiguration configuration) {
         if (configuration == null) {
-            log.warn("Provided perception configuration is null. Using default configuration with viewingAngle={}°, viewingRange={}m.", 40, 200);
-            configuration = new SimplePerceptionConfiguration(40, 200);
+            log.warn("Provided perception configuration is null. Using default configuration with viewingAngle={}°, viewingRange={}m.",
+                    DEFAULT_VIEWING_ANGLE, DEFAULT_VIEWING_RANGE);
+            configuration = new SimplePerceptionConfiguration(DEFAULT_VIEWING_ANGLE, DEFAULT_VIEWING_ANGLE);
         }
         this.perceptionModel = new SimplePerception(this.owner.getId(), configuration);
     }
@@ -67,9 +74,25 @@ public class SimplePerceptionModule implements PerceptionModule<SimplePerception
         SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().updateSpatialIndices();
         // request all vehicles within the area of the field of view
         return SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent()
-                .getVehicleIndex()
+                .getSpatialIndex()
                 .getVehiclesInRange(perceptionModel);
     }
+
+    @Override
+    public List<TrafficLightObject> getPerceivedTrafficLights() {
+        if (perceptionModel == null || owner.getVehicleData() == null) {
+            log.warn("No perception model initialized.");
+            return Lists.newArrayList();
+        }
+        perceptionModel.updateOrigin(owner.getVehicleData().getProjectedPosition(), owner.getVehicleData().getHeading());
+        // note, the perception index is updated internally only if vehicles have moved since the last call
+        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().updateSpatialIndices();
+        // request all vehicles within the area of the field of view
+        return SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent()
+                .getSpatialIndex()
+                .getTrafficLightsInRange(perceptionModel);
+    }
+
 
     /**
      * Checks whether the pre-selection of vehicles actually fall in the viewing range of the

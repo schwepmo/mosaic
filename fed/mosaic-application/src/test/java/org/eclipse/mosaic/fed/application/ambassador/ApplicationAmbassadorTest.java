@@ -602,7 +602,7 @@ public class ApplicationAmbassadorTest {
                 trafficLightRegistration
         );
 
-        // RUN: Send interaction V2xMessageReception
+        // RUN: Send interaction
         final TrafficLightGroup tlg = trafficLightRegistration.getTrafficLightGroup();
         final TrafficLightGroupInfo newTrafficLightGroupInfo = new TrafficLightGroupInfo("trafficLightGroupId", "0", 0, 6000, null);
         Map<String, TrafficLightGroupInfo> trafficLightGroupInfoMap = new HashMap();

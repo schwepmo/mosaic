@@ -16,9 +16,12 @@
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialVehicleIndex;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.VehicleObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObjectAdapter;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.spatial.QuadTree;
@@ -29,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Quad-tree based implementation of a {@link SpatialVehicleIndex}.
+ * Quad-tree based implementation of a {@link SpatialIndex}.
  */
-public class PerceptionTree implements SpatialVehicleIndex {
+public class PerceptionTree implements SpatialIndex {
 
     /**
      * Stores {@link VehicleObject}s for fast removal and position update.
@@ -91,5 +94,15 @@ public class PerceptionTree implements SpatialVehicleIndex {
     @Override
     public int getNumberOfVehicles() {
         return indexedVehicles.size();
+    }
+
+    @Override
+    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+        return null;
+    }
+
+    @Override
+    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
+
     }
 }

@@ -13,12 +13,11 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
-package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
+package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects;
 
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.VehicleObject;
 import org.eclipse.mosaic.lib.spatial.SpatialItemAdapter;
 
-class VehicleObjectAdapter implements SpatialItemAdapter<VehicleObject> {
+public class VehicleObjectAdapter implements SpatialItemAdapter<VehicleObject> {
 
     @Override
     public double getCenterX(VehicleObject item) {

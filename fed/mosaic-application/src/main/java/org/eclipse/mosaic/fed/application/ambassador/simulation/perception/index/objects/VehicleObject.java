@@ -13,7 +13,7 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
-package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
+package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects;
 
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
 import org.eclipse.mosaic.lib.geo.MutableCartesianPoint;
@@ -69,9 +69,13 @@ public class VehicleObject extends Vector3d implements SpatialObject {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         VehicleObject that = (VehicleObject) o;
 

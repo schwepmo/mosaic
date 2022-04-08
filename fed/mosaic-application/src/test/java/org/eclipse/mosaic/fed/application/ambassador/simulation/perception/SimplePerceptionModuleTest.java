@@ -63,7 +63,7 @@ public class SimplePerceptionModuleTest {
     @Rule
     public IpResolverRule ipResolverRule = new IpResolverRule();
 
-    public SpatialVehicleIndex vehicleIndex;
+    public SpatialIndex vehicleIndex;
 
     private SimplePerceptionModule simplePerceptionModule;
 
@@ -71,7 +71,7 @@ public class SimplePerceptionModuleTest {
     public void setup() {
         vehicleIndex = new PerceptionIndex();
         // setup cpc
-        when(cpcMock.getVehicleIndex()).thenReturn(vehicleIndex);
+        when(cpcMock.getSpatialIndex()).thenReturn(vehicleIndex);
         // setup perception module
         VehicleUnit egoVehicleUnit = spy(new VehicleUnit("veh_0", mock(VehicleType.class), null));
         doReturn(egoVehicleData).when(egoVehicleUnit).getVehicleData();
@@ -179,13 +179,13 @@ public class SimplePerceptionModuleTest {
         vehicleIndex = new PerceptionTree(new CartesianRectangle(
                 new MutableCartesianPoint(100, 90, 0), new MutableCartesianPoint(310, 115, 0)), 20, 12
         );
-        when(cpcMock.getVehicleIndex()).thenReturn(vehicleIndex);
+        when(cpcMock.getSpatialIndex()).thenReturn(vehicleIndex);
     }
 
     private void useGrid() {
         vehicleIndex = new PerceptionGrid(new CartesianRectangle(
                 new MutableCartesianPoint(100, 90, 0), new MutableCartesianPoint(310, 115, 0)), 5, 5
         );
-        when(cpcMock.getVehicleIndex()).thenReturn(vehicleIndex);
+        when(cpcMock.getSpatialIndex()).thenReturn(vehicleIndex);
     }
 }

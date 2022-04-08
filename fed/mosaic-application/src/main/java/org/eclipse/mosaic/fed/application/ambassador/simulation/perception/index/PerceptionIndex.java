@@ -16,8 +16,10 @@
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialVehicleIndex;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.VehicleObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
 import java.util.HashMap;
@@ -26,11 +28,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Trivial implementation of {@link SpatialVehicleIndex}, which uses a for loop to solve the range query.
+ * Trivial implementation of {@link SpatialIndex}, which uses a for loop to solve the range query.
  */
-public class PerceptionIndex implements SpatialVehicleIndex {
+public class PerceptionIndex implements SpatialIndex {
 
     private final Map<String, VehicleObject> indexedVehicles = new HashMap<>();
+    private final Map<String, TrafficLightObject> indexedTrafficLights = new HashMap<>();
 
     @Override
     public List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange) {
@@ -57,5 +60,17 @@ public class PerceptionIndex implements SpatialVehicleIndex {
     @Override
     public int getNumberOfVehicles() {
         return indexedVehicles.size();
+    }
+
+    @Override
+    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+        return indexedTrafficLights.values().stream()
+                .filter(searchRange::isInRange)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
+
     }
 }

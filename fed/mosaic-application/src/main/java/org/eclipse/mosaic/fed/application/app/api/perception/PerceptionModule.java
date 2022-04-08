@@ -15,7 +15,8 @@
 
 package org.eclipse.mosaic.fed.application.app.api.perception;
 
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.VehicleObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 
 import java.util.List;
 
@@ -29,7 +30,16 @@ public interface PerceptionModule<ConfigT extends PerceptionModuleConfiguration>
     void enable(ConfigT configuration);
 
     /**
+     * Call to get all vehicles within perception range.
+     *
      * @return a list of all {@link VehicleObject}s inside the perception range of this vehicle.
      */
     List<VehicleObject> getPerceivedVehicles();
+
+    /**
+     * Call to get all traffic lights within perception range.
+     *
+     * @return a list of all {@link TrafficLightObject}s inside the perception range of this vehicle.
+     */
+    List<TrafficLightObject> getPerceivedTrafficLights();
 }

@@ -19,10 +19,14 @@ import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionGrid;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionTree;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.ambassador.util.PerformanceMonitor;
 import org.eclipse.mosaic.fed.application.config.CApplicationAmbassador;
+import org.eclipse.mosaic.interactions.traffic.TrafficLightUpdates;
 import org.eclipse.mosaic.interactions.traffic.VehicleUpdates;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.rti.api.InternalFederateException;
 
@@ -39,6 +43,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The {@link CentralPerceptionComponent} is responsible for keeping a spatial index of all vehicles,
@@ -54,17 +59,28 @@ public class CentralPerceptionComponent {
     /**
      * The spatial index used to store and find vehicles by their positions.
      */
-    private SpatialVehicleIndex vehicleIndex;
+    private SpatialIndex spatialIndex;
 
     /**
-     * The last {@link VehicleUpdates} interaction which is used to update the vehicleIndex
+     * The last {@link VehicleUpdates} interaction which is used to update the {@link #spatialIndex}.
      */
     private VehicleUpdates latestVehicleUpdates;
 
     /**
-     * If set to true, the vehicleIndex will be updated when {@code updateSpatialIndices} is called.
+     * The last {@link TrafficLightUpdates} interaction which is used to update the {@link #spatialIndex}.
+     */
+    private TrafficLightUpdates latestTrafficLightUpdates;
+
+
+    /**
+     * If set to true, the vehicleIndex will be updated when {@link #updateSpatialIndices} is called.
      */
     private boolean updateVehicleIndex = false;
+
+    /**
+     * If set to {@code true}, the vehicleIndex will be updated when {@link #updateSpatialIndices} is called.
+     */
+    private boolean updateTrafficLightIndex = false;
 
     public CentralPerceptionComponent(CApplicationAmbassador.CPerception perceptionConfiguration) {
         this.configuration = Validate.notNull(perceptionConfiguration, "perceptionConfiguration must not be null");
@@ -80,22 +96,22 @@ public class CentralPerceptionComponent {
             if (scenarioBounds.getArea() > 0) {
                 switch (configuration.perceptionBackend) {
                     case Grid:
-                        vehicleIndex = new PerceptionGrid(scenarioBounds, configuration.gridCellWidth, configuration.gridCellHeight);
+                        spatialIndex = new PerceptionGrid(scenarioBounds, configuration.gridCellWidth, configuration.gridCellHeight);
                         break;
                     case QuadTree:
-                        vehicleIndex = new PerceptionTree(scenarioBounds, configuration.treeSplitSize, configuration.treeMaxDepth);
+                        spatialIndex = new PerceptionTree(scenarioBounds, configuration.treeSplitSize, configuration.treeMaxDepth);
                         break;
                     case Trivial:
                     default:
-                        vehicleIndex = new PerceptionIndex();
+                        spatialIndex = new PerceptionIndex();
                 }
             } else {
                 LOG.warn("The bounding area of the scenario could not be determined. A low performance spatial index will be used for perception.");
-                vehicleIndex = new PerceptionIndex();
+                spatialIndex = new PerceptionIndex();
             }
 
             if (configuration.measurePerformance) {
-                vehicleIndex = new MonitoringSpatialIndex(vehicleIndex, performanceMonitor);
+                spatialIndex = new MonitoringSpatialIndex(spatialIndex, performanceMonitor);
             }
         } catch (Exception e) {
             throw new InternalFederateException("Couldn't initialize CentralPerceptionComponent", e);
@@ -103,10 +119,10 @@ public class CentralPerceptionComponent {
     }
 
     /**
-     * Returns the {@link SpatialVehicleIndex} storing all vehicles.
+     * Returns the {@link SpatialIndex} storing all vehicles.
      */
-    public SpatialVehicleIndex getVehicleIndex() {
-        return vehicleIndex;
+    public SpatialIndex getSpatialIndex() {
+        return spatialIndex;
     }
 
     /**
@@ -118,7 +134,12 @@ public class CentralPerceptionComponent {
             // do not update index until next VehicleUpdates interaction is received
             updateVehicleIndex = false;
             // using Iterables.concat allows iterating over both lists subsequently without creating a new list
-            vehicleIndex.updateVehicles(Iterables.concat(latestVehicleUpdates.getAdded(), latestVehicleUpdates.getUpdated()));
+            spatialIndex.updateVehicles(Iterables.concat(latestVehicleUpdates.getAdded(), latestVehicleUpdates.getUpdated()));
+        }
+        if (updateTrafficLightIndex) {
+            updateTrafficLightIndex = false;
+
+            spatialIndex.updateTrafficLights(latestTrafficLightUpdates.getUpdated());
         }
     }
 
@@ -131,9 +152,14 @@ public class CentralPerceptionComponent {
         latestVehicleUpdates = vehicleUpdates;
         updateVehicleIndex = true;
         // we need to remove arrived vehicles in every simulation step, otherwise we could have dead vehicles in the index
-        if (vehicleIndex.getNumberOfVehicles() > 0) {
-            vehicleIndex.removeVehicles(vehicleUpdates.getRemovedNames());
+        if (spatialIndex.getNumberOfVehicles() > 0) {
+            spatialIndex.removeVehicles(vehicleUpdates.getRemovedNames());
         }
+    }
+
+    public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
+        latestTrafficLightUpdates = trafficLightUpdates;
+        updateTrafficLightIndex = true;
     }
 
     /**
@@ -155,12 +181,12 @@ public class CentralPerceptionComponent {
     /**
      * Wrapper class to measure atomic calls of update, search and remove of the used spatial index
      */
-    static class MonitoringSpatialIndex implements SpatialVehicleIndex {
+    static class MonitoringSpatialIndex implements SpatialIndex {
 
-        private final SpatialVehicleIndex parent;
+        private final SpatialIndex parent;
         private final PerformanceMonitor monitor;
 
-        MonitoringSpatialIndex(SpatialVehicleIndex parent, PerformanceMonitor monitor) {
+        MonitoringSpatialIndex(SpatialIndex parent, PerformanceMonitor monitor) {
             this.parent = parent;
             this.monitor = monitor;
         }
@@ -195,6 +221,17 @@ public class CentralPerceptionComponent {
         @Override
         public int getNumberOfVehicles() {
             return parent.getNumberOfVehicles();
+        }
+
+        @Override
+        public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+            // TODO: add
+            return null;
+        }
+
+        @Override
+        public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
+            // TODO: add
         }
     }
 }
