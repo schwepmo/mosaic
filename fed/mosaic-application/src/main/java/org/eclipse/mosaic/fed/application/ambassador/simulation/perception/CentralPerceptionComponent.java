@@ -28,20 +28,14 @@ import org.eclipse.mosaic.interactions.traffic.VehicleUpdates;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
+import org.eclipse.mosaic.lib.util.PerformanceMonitor;
 import org.eclipse.mosaic.rti.api.InternalFederateException;
 
-import ch.qos.logback.classic.LoggerContext;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +48,6 @@ public class CentralPerceptionComponent {
     private final static Logger LOG = LoggerFactory.getLogger(CentralPerceptionComponent.class);
 
     private final CApplicationAmbassador.CPerception configuration;
-    private final PerformanceMonitor performanceMonitor = new PerformanceMonitor();
 
     /**
      * The spatial index used to store and find vehicles by their positions.
@@ -101,6 +94,8 @@ public class CentralPerceptionComponent {
                     case QuadTree:
                         spatialIndex = new PerceptionTree(scenarioBounds, configuration.treeSplitSize, configuration.treeMaxDepth);
                         break;
+                    case SUMO:
+                        LOG.info("Using SUMO to detect surrounding vehicles.");
                     case Trivial:
                     default:
                         spatialIndex = new PerceptionIndex();
@@ -111,7 +106,7 @@ public class CentralPerceptionComponent {
             }
 
             if (configuration.measurePerformance) {
-                spatialIndex = new MonitoringSpatialIndex(spatialIndex, performanceMonitor);
+                spatialIndex = new MonitoringSpatialIndex(spatialIndex, PerformanceMonitor.getInstance());
             }
         } catch (Exception e) {
             throw new InternalFederateException("Couldn't initialize CentralPerceptionComponent", e);
@@ -160,22 +155,6 @@ public class CentralPerceptionComponent {
     public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
         latestTrafficLightUpdates = trafficLightUpdates;
         updateTrafficLightIndex = true;
-    }
-
-    /**
-     * Stores measurements done during update and search operations of the spatial index.
-     */
-    public void finish() {
-        if (configuration.measurePerformance) {
-            performanceMonitor.printSummary();
-            String logDirectory = ((LoggerContext) LoggerFactory.getILoggerFactory()).getProperty("logDirectory");
-            try (Writer perceptionPerformanceWriter = new OutputStreamWriter(
-                    new FileOutputStream(new File(logDirectory, "PerceptionPerformance.csv")), Charsets.UTF_8)) {
-                performanceMonitor.exportDetailedMeasurements(perceptionPerformanceWriter);
-            } catch (IOException e) {
-                LOG.warn("Could not write performance result for perception module.");
-            }
-        }
     }
 
     /**
