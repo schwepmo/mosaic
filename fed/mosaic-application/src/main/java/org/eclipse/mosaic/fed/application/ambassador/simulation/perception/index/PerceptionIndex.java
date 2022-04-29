@@ -15,6 +15,7 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
+import org.eclipse.mosaic.fed.application.ambassador.UnitSimulator;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
@@ -71,6 +72,6 @@ public class PerceptionIndex implements SpatialIndex {
 
     @Override
     public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
-
+        //UnitSimulator.UnitSimulator.getUnitFromId()
     }
 }

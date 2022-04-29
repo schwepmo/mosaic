@@ -15,6 +15,8 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.api.perception.PerceptionModule;
 import org.eclipse.mosaic.interactions.vehicle.VehicleSightDistanceConfiguration;
 
@@ -47,6 +49,12 @@ public class SumoPerceptionModule implements PerceptionModule<SimplePerceptionCo
                         .setSpeed(v.getSpeed())
                         .setHeading(v.getHeading())
                 ).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TrafficLightObject> getPerceivedTrafficLights() {
+        // TODO: add this
+        return null;
     }
 
 }

@@ -22,9 +22,12 @@ import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 
 public class TrafficLightObject extends Vector3d implements SpatialObject {
 
+    /**
+     * TODO: this id probably needs to be manually e.g. groupId_id
+     */
     private final String id;
     private final String trafficLightGroupId;
-    private final MutableCartesianPoint cartesianPosition = new MutableCartesianPoint();
+    private final MutableCartesianPoint projectedPosition = new MutableCartesianPoint();
 
     private TrafficLightState trafficLightState;
 
@@ -35,11 +38,11 @@ public class TrafficLightObject extends Vector3d implements SpatialObject {
 
     @Override
     public String getId() {
-        return null;
+        return id;
     }
 
     @Override
     public CartesianPoint getProjectedPosition() {
-        return null;
+        return projectedPosition;
     }
 }
