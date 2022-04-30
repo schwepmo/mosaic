@@ -15,12 +15,14 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
-import org.eclipse.mosaic.fed.application.ambassador.UnitSimulator;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
+import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroup;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
 import java.util.HashMap;
@@ -71,7 +73,38 @@ public class PerceptionIndex implements SpatialIndex {
     }
 
     @Override
-    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
-        //UnitSimulator.UnitSimulator.getUnitFromId()
+    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
+        TrafficLightGroup trafficLightGroup = trafficLightRegistration.getTrafficLightGroup();
+        String trafficLightGroupId = trafficLightGroup.getGroupId();
+        trafficLightGroup.getTrafficLights().forEach(
+                (trafficLight) -> {
+                    String trafficLightId = calculateTrafficLightId(trafficLightGroupId, trafficLight.getId());
+                    indexedTrafficLights.computeIfAbsent(trafficLightId, TrafficLightObject::new)
+                            .setTrafficLightGroupId(trafficLightGroupId)
+                            .setPosition(trafficLight.getPosition().toCartesian())
+                            .setIncomingLane(trafficLight.getIncomingLane())
+                            .setOutgoingLane(trafficLight.getOutgoingLane())
+                            .setTrafficLightState(trafficLight.getCurrentState());
+
+                }
+        );
+    }
+
+    @Override
+    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightGroupsToUpdate) {
+        trafficLightGroupsToUpdate.forEach(
+                (trafficLightGroupId, trafficLightGroupInfo) -> {
+                    List<TrafficLightState> trafficLightStates = trafficLightGroupInfo.getCurrentState();
+                    for (int i = 0; i < trafficLightStates.size(); i++) {
+                        String trafficLightId = calculateTrafficLightId(trafficLightGroupId, i);
+                        indexedTrafficLights.get(trafficLightId)
+                                .setTrafficLightState(trafficLightStates.get(i));
+                    }
+                }
+        );
+    }
+
+    private String calculateTrafficLightId(String trafficLightGroupId, int trafficLightIndex) {
+        return trafficLightGroupId + "_" + trafficLightIndex;
     }
 }

@@ -110,7 +110,7 @@ public class MappingAmbassador extends AbstractFederateAmbassador {
      * @param interaction The received interaction.
      */
     private void handleInteraction(ScenarioTrafficLightRegistration interaction) {
-        log.info("Received TL-Interaction");
+        log.info("Received {}", ScenarioTrafficLightRegistration.TYPE_ID);
         this.scenarioTrafficLightRegistration = interaction;
         if (framework != null) {
             framework.setScenarioTrafficLightRegistration(scenarioTrafficLightRegistration);

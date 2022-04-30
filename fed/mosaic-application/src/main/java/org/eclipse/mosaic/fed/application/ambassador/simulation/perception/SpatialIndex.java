@@ -17,6 +17,7 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
+import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
@@ -61,7 +62,14 @@ public interface SpatialIndex {
     List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange);
 
     /**
-     * Updates the {@link SpatialIndex} with a list of {@link TrafficLightGroupInfo} objects.
+     * Adds TODO
+     * @param trafficLightRegistration
+     */
+    void addTrafficLight(TrafficLightRegistration trafficLightRegistration);
+
+    /**
+     * Updates the {@link SpatialIndex} in regard to traffic lights. The unit simulator has to be queried as
+     * {@code TrafficLightUpdates} do not contain all necessary information.
      *
      * @param trafficLightsToUpdate a list of information packages transmitted by the traffic simulator
      */

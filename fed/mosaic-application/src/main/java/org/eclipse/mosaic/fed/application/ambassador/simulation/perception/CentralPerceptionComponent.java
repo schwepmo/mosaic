@@ -22,6 +22,7 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.config.CApplicationAmbassador;
+import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.interactions.traffic.TrafficLightUpdates;
 import org.eclipse.mosaic.interactions.traffic.VehicleUpdates;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
@@ -151,6 +152,9 @@ public class CentralPerceptionComponent {
         }
     }
 
+    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
+        spatialIndex.addTrafficLight(trafficLightRegistration);
+    }
     public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
         latestTrafficLightUpdates = trafficLightUpdates;
         updateTrafficLightIndex = true;
@@ -205,6 +209,12 @@ public class CentralPerceptionComponent {
         public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
             // TODO: add
             return null;
+        }
+
+        @Override
+        public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
+            // TODO: add
+            return;
         }
 
         @Override

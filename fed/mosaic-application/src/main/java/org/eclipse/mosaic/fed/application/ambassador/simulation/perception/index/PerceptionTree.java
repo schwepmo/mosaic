@@ -20,6 +20,7 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.Spati
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObjectAdapter;
+import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
@@ -98,11 +99,17 @@ public class PerceptionTree implements SpatialIndex {
 
     @Override
     public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+        // TODO
         return null;
     }
 
     @Override
-    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
+    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
 
+    }
+
+    @Override
+    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
+        // TODO
     }
 }

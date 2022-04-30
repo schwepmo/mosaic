@@ -74,7 +74,7 @@ public class TrafficLightGroupUnit extends AbstractSimulationUnit implements Tra
         this.trafficLightGroup = trafficLightGroup;
         this.currentProgram = Iterables.getLast(trafficLightGroup.getPrograms().values(), null);
 
-        sendInteractionToRti(new TrafficLightSubscription(getSimulationTime(), trafficLightGroup.getGroupId()));
+//        sendInteractionToRti(new TrafficLightSubscription(getSimulationTime(), trafficLightGroup.getGroupId()));
     }
 
     @Override

@@ -44,6 +44,7 @@ import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.interactions.mapping.VehicleRegistration;
 import org.eclipse.mosaic.interactions.mapping.advanced.RoutelessVehicleRegistration;
 import org.eclipse.mosaic.interactions.traffic.TrafficDetectorUpdates;
+import org.eclipse.mosaic.interactions.traffic.TrafficLightSubscription;
 import org.eclipse.mosaic.interactions.traffic.TrafficLightUpdates;
 import org.eclipse.mosaic.interactions.traffic.VehicleRoutesInitialization;
 import org.eclipse.mosaic.interactions.traffic.VehicleTypesInitialization;
@@ -356,6 +357,16 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
     }
 
     private void process(final TrafficLightRegistration trafficLightRegistration) {
+        // TODO: this needs to be validated and possibly made configurable, as we now just subscribe to all traffic lights
+        Interaction trafficLightSubscription = new TrafficLightSubscription(trafficLightRegistration.getTime(),
+                trafficLightRegistration.getTrafficLightGroup().getGroupId());
+        log.info("Sending TrafficLightSubscription:" + trafficLightSubscription);
+        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().addTrafficLight(trafficLightRegistration);
+        try {
+            rti.triggerInteraction(trafficLightSubscription);
+        } catch (InternalFederateException | IllegalValueException e) {
+            log.error(ErrorRegister.AMBASSADOR_ErrorSendInteraction.toString(), e);
+        }
         UnitSimulator.UnitSimulator.registerTrafficLight(trafficLightRegistration);
     }
 
@@ -596,8 +607,6 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
     }
 
     private void process(final TrafficLightUpdates trafficLightUpdates) {
-        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().updateTrafficLights(trafficLightUpdates);
-
         for (TrafficLightGroupUnit simulationUnit : UnitSimulator.UnitSimulator.getTrafficLights().values()) {
             TrafficLightGroupInfo trafficLightGroupInfo =
                     trafficLightUpdates.getUpdated().get(simulationUnit.getTrafficLightGroup().getGroupId());
@@ -612,6 +621,8 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
                 addEvent(event);
             }
         }
+        // TODO: this will probably lack behind in time as the events for updating the TLs haven't been processed yet
+        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().updateTrafficLights(trafficLightUpdates);
     }
 
     private void process(final VehicleUpdates vehicleUpdates) {
