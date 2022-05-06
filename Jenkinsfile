@@ -8,7 +8,7 @@ kind: Pod
 spec:
   containers:
   - name: maven-sumo
-    image: eclipsemosaic/mosaic-ci:jdk8-sumo-1.12.0
+    image: eclipsemosaic/mosaic-ci:jdk8-sumo-1.13.0
     command:
     - cat
     tty: true
@@ -151,7 +151,7 @@ spec:
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'bundle/target/eclipse-mosaic-*.zip', caseSensitive: false, onlyIfSuccessful: true
+                    archiveArtifacts artifacts: 'bundle/target/eclipse-mosaic-*.*', caseSensitive: false, onlyIfSuccessful: true
                 }
             }
         }
