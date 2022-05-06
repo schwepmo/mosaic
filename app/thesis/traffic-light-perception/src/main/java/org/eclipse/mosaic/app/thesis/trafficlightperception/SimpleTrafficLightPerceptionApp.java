@@ -23,6 +23,8 @@ import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -76,13 +78,34 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
     private void perceiveTrafficLights() {
         List<TrafficLightObject> perceivedTrafficLights = getOs().getPerceptionModule().getPerceivedTrafficLights();
         perceivedTrafficLights.forEach(trafficLightObject -> {
-            if (getOs().getVehicleData() != null && getOs().getVehicleData().getRoadPosition() != null) {
+            if (getOs().getVehicleData() != null && getOs().getRoadPosition() != null) {
                 // TODO: to get responsible traffic light we would need upcoming edge/lane
-                if (trafficLightObject.getIncomingLane().equals(getOs().getVehicleData().getRoadPosition().getConnectionId() + "_" + getOs().getVehicleData().getRoadPosition().getLaneIndex())) {
-                    getLog().infoSimTime(this, "Traffic Light {} is on my lane and shows {}", trafficLightObject.getId(), trafficLightObject.getTrafficLightState());
+                if (isRelevantTrafficLight(trafficLightObject)) {
+                    getLog().infoSimTime(this, "Traffic Light {} is on my route and shows {}", trafficLightObject.getId(), trafficLightObject.getTrafficLightState());
                 }
             }
         });
-        getLog().infoSimTime(this, "Perceived traffic lights: {}", perceivedTrafficLights.stream().map(TrafficLightObject::getId).collect(Collectors.toList()));
+//        getLog().infoSimTime(this, "Perceived traffic lights: {}", perceivedTrafficLights.stream().map(TrafficLightObject::getId).collect(Collectors.toList()));
+    }
+
+    private boolean isRelevantTrafficLight(TrafficLightObject trafficLightObject) {
+        String currentLaneString = getOs().getRoadPosition().getConnectionId() + "_" + getOs().getRoadPosition().getLaneIndex();
+        String nextConnectionOnRoute = getNextConnectionOnRoute();
+        return currentLaneString.equals(trafficLightObject.getIncomingLane())
+                && nextConnectionOnRoute != null && nextConnectionOnRoute.equals(trafficLightObject.getOutgoingLane().split("_")[0]);
+    }
+
+    private String getNextConnectionOnRoute() {
+        String currentConnection = getOs().getRoadPosition().getConnectionId();
+        List<String> currentRoute = Validate.notNull(getOs().getNavigationModule().getCurrentRoute(),
+                "Currently no route available").getConnectionIds();
+        for (int i = 0; i < currentRoute.size(); i++) {
+            if (currentRoute.get(i).equals(currentConnection)) {
+                if (i < currentRoute.size() - 1) {
+                    return currentRoute.get(i + 1);
+                }
+            }
+        }
+        return null;
     }
 }

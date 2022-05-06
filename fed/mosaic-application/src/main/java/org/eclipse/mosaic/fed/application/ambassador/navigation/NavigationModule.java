@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Implementation of the interface to access the central navigation component.
@@ -151,7 +152,7 @@ public class NavigationModule implements INavigationModule, IRoutingModule {
     }
 
     @Override
-    public VehicleRoute getCurrentRoute() {
+    public @Nullable VehicleRoute getCurrentRoute() {
         return currentRoute;
     }
 

@@ -80,6 +80,7 @@ public interface INavigationModule {
      *
      * @return the route the vehicle is currently driving on
      */
+    @Nullable
     VehicleRoute getCurrentRoute();
 
     /**
