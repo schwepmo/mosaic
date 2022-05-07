@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PerceptionGrid implements SpatialIndex {
+public class PerceptionGrid extends AbstractPerceptionIndex {
     /**
      * Stores {@link VehicleObject}s for fast removal and position update.
      */
@@ -88,20 +88,4 @@ public class PerceptionGrid implements SpatialIndex {
     public int getNumberOfVehicles() {
         return indexedVehicles.size();
     }
-
-    @Override
-    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
-        return null;
-    }
-
-    @Override
-    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
-
-    }
-
-    @Override
-    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
-
-    }
-
 }

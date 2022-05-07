@@ -155,6 +155,7 @@ public class CentralPerceptionComponent {
     public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
         spatialIndex.addTrafficLight(trafficLightRegistration);
     }
+
     public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
         latestTrafficLightUpdates = trafficLightUpdates;
         updateTrafficLightIndex = true;

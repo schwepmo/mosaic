@@ -33,10 +33,10 @@ import javax.annotation.Nullable;
 public class SimpleTrafficLightPerceptionApp extends AbstractApplication<VehicleOperatingSystem> implements VehicleApplication {
 
     private static final String EVENT_RESOURCE = "PERCEPTION";
-    private static final long queryInterval = 2 * TIME.SECOND;
+    private static final long queryInterval = 1 * TIME.SECOND;
 
     private static final double VIEWING_ANGLE = 108d;
-    private static final double VIEWING_RANGE = 25d;
+    private static final double VIEWING_RANGE = 100d;
 
     @Override
     public void onStartup() {
@@ -79,13 +79,18 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
         List<TrafficLightObject> perceivedTrafficLights = getOs().getPerceptionModule().getPerceivedTrafficLights();
         perceivedTrafficLights.forEach(trafficLightObject -> {
             if (getOs().getVehicleData() != null && getOs().getRoadPosition() != null) {
-                // TODO: to get responsible traffic light we would need upcoming edge/lane
                 if (isRelevantTrafficLight(trafficLightObject)) {
-                    getLog().infoSimTime(this, "Traffic Light {} is on my route and shows {}", trafficLightObject.getId(), trafficLightObject.getTrafficLightState());
+                    double distanceToTrafficLight = getDistanceToTrafficLight(trafficLightObject);
+                    getLog().infoSimTime(this, "[perceived] TL={}, distance={}, state={}", trafficLightObject.getId(),
+                            distanceToTrafficLight, trafficLightObject.getTrafficLightState());
                 }
             }
         });
 //        getLog().infoSimTime(this, "Perceived traffic lights: {}", perceivedTrafficLights.stream().map(TrafficLightObject::getId).collect(Collectors.toList()));
+    }
+
+    private double getDistanceToTrafficLight(TrafficLightObject trafficLightObject) {
+        return getOs().getPosition().distanceTo(trafficLightObject.getProjectedPosition().toGeo());
     }
 
     private boolean isRelevantTrafficLight(TrafficLightObject trafficLightObject) {

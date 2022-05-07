@@ -62,7 +62,8 @@ public interface SpatialIndex {
     List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange);
 
     /**
-     * Adds TODO
+     * Adds traffic lights to the spatial index, as their positions are static it is sufficient
+     * to store positional information only once
      * @param trafficLightRegistration
      */
     void addTrafficLight(TrafficLightRegistration trafficLightRegistration);

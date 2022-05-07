@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Quad-tree based implementation of a {@link SpatialIndex}.
  */
-public class PerceptionTree implements SpatialIndex {
+public class PerceptionTree extends AbstractPerceptionIndex {
 
     /**
      * Stores {@link VehicleObject}s for fast removal and position update.
@@ -95,21 +95,5 @@ public class PerceptionTree implements SpatialIndex {
     @Override
     public int getNumberOfVehicles() {
         return indexedVehicles.size();
-    }
-
-    @Override
-    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
-        // TODO
-        return null;
-    }
-
-    @Override
-    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
-
-    }
-
-    @Override
-    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
-        // TODO
     }
 }

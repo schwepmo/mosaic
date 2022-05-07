@@ -33,10 +33,9 @@ import java.util.stream.Collectors;
 /**
  * Trivial implementation of {@link SpatialIndex}, which uses a for loop to solve the range query.
  */
-public class PerceptionIndex implements SpatialIndex {
+public class PerceptionIndex extends AbstractPerceptionIndex {
 
     private final Map<String, VehicleObject> indexedVehicles = new HashMap<>();
-    private final Map<String, TrafficLightObject> indexedTrafficLights = new HashMap<>();
 
     @Override
     public List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange) {
@@ -63,48 +62,5 @@ public class PerceptionIndex implements SpatialIndex {
     @Override
     public int getNumberOfVehicles() {
         return indexedVehicles.size();
-    }
-
-    @Override
-    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
-        return indexedTrafficLights.values().stream()
-                .filter(searchRange::isInRange)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
-        TrafficLightGroup trafficLightGroup = trafficLightRegistration.getTrafficLightGroup();
-        String trafficLightGroupId = trafficLightGroup.getGroupId();
-        trafficLightGroup.getTrafficLights().forEach(
-                (trafficLight) -> {
-                    String trafficLightId = calculateTrafficLightId(trafficLightGroupId, trafficLight.getId());
-                    indexedTrafficLights.computeIfAbsent(trafficLightId, TrafficLightObject::new)
-                            .setTrafficLightGroupId(trafficLightGroupId)
-                            .setPosition(trafficLight.getPosition().toCartesian())
-                            .setIncomingLane(trafficLight.getIncomingLane())
-                            .setOutgoingLane(trafficLight.getOutgoingLane())
-                            .setTrafficLightState(trafficLight.getCurrentState());
-
-                }
-        );
-    }
-
-    @Override
-    public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightGroupsToUpdate) {
-        trafficLightGroupsToUpdate.forEach(
-                (trafficLightGroupId, trafficLightGroupInfo) -> {
-                    List<TrafficLightState> trafficLightStates = trafficLightGroupInfo.getCurrentState();
-                    for (int i = 0; i < trafficLightStates.size(); i++) {
-                        String trafficLightId = calculateTrafficLightId(trafficLightGroupId, i);
-                        indexedTrafficLights.get(trafficLightId)
-                                .setTrafficLightState(trafficLightStates.get(i));
-                    }
-                }
-        );
-    }
-
-    private String calculateTrafficLightId(String trafficLightGroupId, int trafficLightIndex) {
-        return trafficLightGroupId + "_" + trafficLightIndex;
     }
 }
