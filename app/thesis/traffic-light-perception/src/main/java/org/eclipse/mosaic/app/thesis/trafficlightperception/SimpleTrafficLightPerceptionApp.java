@@ -16,9 +16,15 @@ package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SimplePerceptionConfiguration;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
+import org.eclipse.mosaic.lib.enums.VehicleStopMode;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
+import org.eclipse.mosaic.lib.math.Vector3d;
+import org.eclipse.mosaic.lib.math.VectorUtils;
+import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
@@ -26,7 +32,6 @@ import org.eclipse.mosaic.rti.TIME;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -83,10 +88,30 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
                     double distanceToTrafficLight = getDistanceToTrafficLight(trafficLightObject);
                     getLog().infoSimTime(this, "[perceived] TL={}, distance={}, state={}", trafficLightObject.getId(),
                             distanceToTrafficLight, trafficLightObject.getTrafficLightState());
+                    mapTrafficLightPosition(trafficLightObject);
                 }
             }
         });
 //        getLog().infoSimTime(this, "Perceived traffic lights: {}", perceivedTrafficLights.stream().map(TrafficLightObject::getId).collect(Collectors.toList()));
+    }
+
+    private void mapTrafficLightPosition(TrafficLightObject trafficLightObject) {
+        if (getOs().getVehicleData().getSpeed() <= 3 && trafficLightObject.getTrafficLightState().equals(TrafficLightState.RED)) {
+            if (noVehiclesInFront()) {
+                GeoPoint trafficLightPosition = getOs().getPosition().toVector3d()
+                        .add(VectorUtils.getDirectionVectorFromHeading(
+                                getOs().getVehicleData().getHeading(), new Vector3d())
+                                .multiply(getOs().getVehicleParameters().getMinimumGap())
+                        ).toGeo();
+                getLog().infoSimTime(this, "[TL Position] original={}, perceived={}", trafficLightObject.getProjectedPosition().toGeo(), trafficLightPosition);
+            }
+        }
+    }
+
+    private boolean noVehiclesInFront() {
+        // TODO: make this more relevant
+        List<VehicleObject> perceivedVehicles = getOs().getPerceptionModule().getPerceivedVehicles();
+        return perceivedVehicles.isEmpty();
     }
 
     private double getDistanceToTrafficLight(TrafficLightObject trafficLightObject) {
