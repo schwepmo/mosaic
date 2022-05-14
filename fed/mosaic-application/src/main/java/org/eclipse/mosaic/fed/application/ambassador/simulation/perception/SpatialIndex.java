@@ -18,6 +18,7 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
@@ -75,4 +76,13 @@ public interface SpatialIndex {
      * @param trafficLightsToUpdate a list of information packages transmitted by the traffic simulator
      */
     void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate);
+
+    /**
+     * Allows to map the position of a traffic light exactly once. Make sure to measure the proper position.
+     * This is necessary if it is not easily possible to extract the individual traffic light positions from the traffic simulator
+     * @param trafficLightId id of traffic light
+     * @param trafficLightPosition position of the traffic light
+     * @return {@code true} if tl was mapped, else {@code false}
+     */
+    boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition);
 }

@@ -26,6 +26,7 @@ import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.interactions.traffic.TrafficLightUpdates;
 import org.eclipse.mosaic.interactions.traffic.VehicleUpdates;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.PerformanceMonitor;
@@ -152,13 +153,34 @@ public class CentralPerceptionComponent {
         }
     }
 
+    /**
+     * TODO
+     *
+     * @param trafficLightRegistration
+     */
     public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
         spatialIndex.addTrafficLight(trafficLightRegistration);
     }
 
+    /**
+     * TODO
+     *
+     * @param trafficLightUpdates
+     */
     public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
         latestTrafficLightUpdates = trafficLightUpdates;
         updateTrafficLightIndex = true;
+    }
+
+    /**
+     * TODO
+     *
+     * @param trafficLightId
+     * @param trafficLightPosition
+     * @return
+     */
+    public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
+        return spatialIndex.mapTrafficLightPosition(trafficLightId, trafficLightPosition);
     }
 
     /**
@@ -215,12 +237,17 @@ public class CentralPerceptionComponent {
         @Override
         public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
             // TODO: add
-            return;
         }
 
         @Override
         public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
             // TODO: add
+        }
+
+        @Override
+        public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
+            // TODO
+            return false;
         }
     }
 }

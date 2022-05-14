@@ -14,24 +14,28 @@
  */
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
+import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SimplePerceptionConfiguration;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
-import org.eclipse.mosaic.lib.enums.VehicleStopMode;
+import org.eclipse.mosaic.lib.database.Database;
 import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.math.Vector3d;
 import org.eclipse.mosaic.lib.math.VectorUtils;
+import org.eclipse.mosaic.lib.objects.road.IRoadPosition;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
+import org.eclipse.mosaic.lib.routing.database.DatabaseRouting;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -43,12 +47,21 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
     private static final double VIEWING_ANGLE = 108d;
     private static final double VIEWING_RANGE = 100d;
 
+    private static final float WAIT_DISTANCE_BEFORE_TRAFFIC_LIGHT = 1; //m
+
+    private Database database;
+
+    private GeoPoint previousPosition;
+
+    private GeoPoint currentPosition;
+
     @Override
     public void onStartup() {
         getLog().infoSimTime(this, "Started {} on {}.", this.getClass().getSimpleName(), getOs().getId());
 
         enablePerceptionModule();
         schedulePerception();
+        database = ((DatabaseRouting) SimulationKernel.SimulationKernel.getCentralNavigationComponent().getRouting()).getScenarioDatabase();
     }
 
     private void enablePerceptionModule() {
@@ -73,7 +86,10 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
 
     @Override
     public void onVehicleUpdated(@Nullable VehicleData previousVehicleData, @Nonnull VehicleData updatedVehicleData) {
-
+        if (previousVehicleData != null) {
+            previousPosition = previousVehicleData.getPosition();
+        }
+        currentPosition = updatedVehicleData.getPosition();
     }
 
     private void schedulePerception() {
@@ -85,10 +101,10 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
         perceivedTrafficLights.forEach(trafficLightObject -> {
             if (getOs().getVehicleData() != null && getOs().getRoadPosition() != null) {
                 if (isRelevantTrafficLight(trafficLightObject)) {
+                    mapTrafficLightPosition(trafficLightObject);
                     double distanceToTrafficLight = getDistanceToTrafficLight(trafficLightObject);
                     getLog().infoSimTime(this, "[perceived] TL={}, distance={}, state={}", trafficLightObject.getId(),
                             distanceToTrafficLight, trafficLightObject.getTrafficLightState());
-                    mapTrafficLightPosition(trafficLightObject);
                 }
             }
         });
@@ -96,22 +112,45 @@ public class SimpleTrafficLightPerceptionApp extends AbstractApplication<Vehicle
     }
 
     private void mapTrafficLightPosition(TrafficLightObject trafficLightObject) {
-        if (getOs().getVehicleData().getSpeed() <= 3 && trafficLightObject.getTrafficLightState().equals(TrafficLightState.RED)) {
-            if (noVehiclesInFront()) {
-                GeoPoint trafficLightPosition = getOs().getPosition().toVector3d()
-                        .add(VectorUtils.getDirectionVectorFromHeading(
-                                getOs().getVehicleData().getHeading(), new Vector3d())
-                                .multiply(getOs().getVehicleParameters().getMinimumGap())
-                        ).toGeo();
-                getLog().infoSimTime(this, "[TL Position] original={}, perceived={}", trafficLightObject.getProjectedPosition().toGeo(), trafficLightPosition);
-            }
+        if (trafficLightObject.isMapped()) {
+            return;
         }
+        if (vehiclesInFrontOnSameEdge()) {
+            return;
+        }
+        if (currentPosition == null || previousPosition == null || currentPosition.distanceTo(previousPosition) >= 0.05) {
+            return;
+        }
+//        if (!MathUtils.isFuzzyEqual(getOs().getVehicleData().getSpeed(), 0d, 0.01d)) {
+//            return;
+//        }
+        if (!trafficLightObject.getTrafficLightState().equals(TrafficLightState.RED)) {
+            return;
+        }
+        // add min-gap of vehicle to position of the traffic light
+        GeoPoint trafficLightPosition = getOs().getPosition().toVector3d()
+                .add(VectorUtils.getDirectionVectorFromHeading(
+                                getOs().getVehicleData().getHeading(), new Vector3d())
+                        .multiply(WAIT_DISTANCE_BEFORE_TRAFFIC_LIGHT)
+                ).toGeo();
+        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().mapTrafficLightPosition(trafficLightObject.getId(), trafficLightPosition);
+        getLog().infoSimTime(this, "[TL Position] original={}, perceived={}", trafficLightObject.toGeo(), trafficLightPosition);
+
     }
 
-    private boolean noVehiclesInFront() {
-        // TODO: make this more relevant
+    private boolean vehiclesInFrontOnSameEdge() {
         List<VehicleObject> perceivedVehicles = getOs().getPerceptionModule().getPerceivedVehicles();
-        return perceivedVehicles.isEmpty();
+        if (perceivedVehicles.isEmpty()) {
+            return false;
+        }
+        for (VehicleObject vehicleObject : perceivedVehicles) { // check if any vehicles are in front of ego-vehicle
+            IRoadPosition otherVehiclePosition = getOs().getNavigationModule().getClosestRoadPosition(vehicleObject.toGeo());
+            if (Objects.equals(otherVehiclePosition.getConnectionId(), getOs().getRoadPosition().getConnectionId())
+                /*&& otherVehiclePosition.getLaneIndex() == getOs().getRoadPosition().getLaneIndex()*/) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private double getDistanceToTrafficLight(TrafficLightObject trafficLightObject) {

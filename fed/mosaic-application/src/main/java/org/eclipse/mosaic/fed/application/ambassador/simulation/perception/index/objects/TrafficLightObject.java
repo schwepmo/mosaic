@@ -18,17 +18,18 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.inde
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
 import org.eclipse.mosaic.lib.geo.MutableCartesianPoint;
 import org.eclipse.mosaic.lib.math.Vector3d;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLight;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 
 public class TrafficLightObject extends Vector3d implements SpatialObject {
 
     /**
-     * TODO: this id probably needs to be manually e.g. groupId_id
+     * Manually created traffic light id using <group-id>_<tl-index>.
      */
     private final String id;
 
     private final MutableCartesianPoint projectedPosition = new MutableCartesianPoint();
+
+    private boolean mapped = false;
     private String trafficLightGroupId;
 
     private TrafficLightState trafficLightState;
@@ -52,8 +53,19 @@ public class TrafficLightObject extends Vector3d implements SpatialObject {
     }
 
     public TrafficLightObject setPosition(CartesianPoint position) {
-        this.projectedPosition.set(position);
-        position.toVector3d(this);
+        if (!mapped) {
+            this.projectedPosition.set(position);
+            position.toVector3d(this);
+        }
+        return this;
+    }
+
+    public boolean isMapped() {
+        return mapped;
+    }
+
+    public TrafficLightObject setMapped() {
+        mapped = true;
         return this;
     }
 

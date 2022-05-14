@@ -20,6 +20,7 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.Spati
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroup;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;

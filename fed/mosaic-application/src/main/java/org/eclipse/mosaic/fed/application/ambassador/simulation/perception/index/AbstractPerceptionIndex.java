@@ -19,6 +19,7 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.Perce
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroup;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
@@ -78,6 +79,26 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
                 }
         );
     }
+
+    /**
+     * TODO
+     *
+     * @param trafficLightId
+     * @param trafficLightPosition
+     * @return
+     */
+    public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
+        TrafficLightObject trafficLightObject = indexedTrafficLights.get(trafficLightId);
+        if (trafficLightObject.isMapped()) {
+            return false;
+        } else {
+            trafficLightObject
+                    .setPosition(trafficLightPosition.toCartesian())
+                    .setMapped();
+            return true;
+        }
+    }
+
 
     private String calculateTrafficLightId(String trafficLightGroupId, int trafficLightIndex) {
         return trafficLightGroupId + "_" + trafficLightIndex;
