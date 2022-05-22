@@ -65,7 +65,7 @@ public interface SpatialIndex {
     /**
      * Adds traffic lights to the spatial index, as their positions are static it is sufficient
      * to store positional information only once
-     * @param trafficLightRegistration
+     * @param trafficLightRegistration the registration interaction
      */
     void addTrafficLight(TrafficLightRegistration trafficLightRegistration);
 
@@ -80,9 +80,16 @@ public interface SpatialIndex {
     /**
      * Allows to map the position of a traffic light exactly once. Make sure to measure the proper position.
      * This is necessary if it is not easily possible to extract the individual traffic light positions from the traffic simulator
-     * @param trafficLightId id of traffic light
+     *
+     * @param trafficLightId       id of traffic light
      * @param trafficLightPosition position of the traffic light
      * @return {@code true} if tl was mapped, else {@code false}
      */
     boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition);
+
+    /**
+     * Returns the number of TLs in the simulation.
+     * @return the number of TLs
+     */
+    int getNumberOfTrafficLights();
 }

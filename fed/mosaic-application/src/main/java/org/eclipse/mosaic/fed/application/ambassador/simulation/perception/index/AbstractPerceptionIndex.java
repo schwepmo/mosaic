@@ -42,6 +42,11 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
     private final Map<String, TrafficLightObject> indexedTrafficLights = new HashMap<>();
 
     @Override
+    public int getNumberOfTrafficLights() {
+        return indexedTrafficLights.size();
+    }
+
+    @Override
     public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
         return indexedTrafficLights.values().stream()
                 .filter(searchRange::isInRange)
@@ -81,15 +86,17 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
     }
 
     /**
-     * TODO
+     * Maps the exact position of a TL as this cannot be directly extracted
+     * from some traffic simulators.
      *
-     * @param trafficLightId
-     * @param trafficLightPosition
-     * @return
+     * @param trafficLightId       id of the TL to be mapped
+     * @param trafficLightPosition position of the TL to be mapped
+     * @return {@code true} if TL position was overridden, otherwise {@code false}
      */
+    @Override
     public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
         TrafficLightObject trafficLightObject = indexedTrafficLights.get(trafficLightId);
-        if (trafficLightObject.isMapped()) {
+        if (trafficLightObject == null || trafficLightObject.isMapped()) {
             return false;
         } else {
             trafficLightObject
@@ -98,7 +105,6 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
             return true;
         }
     }
-
 
     private String calculateTrafficLightId(String trafficLightGroupId, int trafficLightIndex) {
         return trafficLightGroupId + "_" + trafficLightIndex;

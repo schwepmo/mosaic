@@ -14,32 +14,37 @@
  */
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
-import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
+import org.apache.commons.lang3.Validate;
+import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingApp;
+import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
+import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SimplePerceptionConfiguration;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
-import org.eclipse.mosaic.fed.application.app.AbstractApplication;
 import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
+import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
+import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.math.Vector3d;
 import org.eclipse.mosaic.lib.math.VectorUtils;
 import org.eclipse.mosaic.lib.objects.road.IRoadPosition;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
+import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
-import org.eclipse.mosaic.rti.TIME;
 
-import org.apache.commons.lang3.Validate;
-
-import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLightMappingApp, VehicleOperatingSystem>
-        implements VehicleApplication {
+        implements VehicleApplication, CommunicationApplication {
     /**
      * Name to recognise event.
      */
@@ -66,6 +71,7 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
         getLog().infoSimTime(this, "[Startup] App={}, Vehicle={}.", this.getClass().getSimpleName(), getOs().getId());
         config = getConfiguration();
         enablePerceptionModule();
+        getOs().getCellModule().enable();
         schedulePerception();
     }
 
@@ -140,9 +146,10 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
                                 getOs().getVehicleData().getHeading(), new Vector3d())
                         .multiply(config.distanceToTrafficLight)
                 ).toGeo();
-        getLog().infoSimTime(this, "[TL Mapping] original={}, new={}", trafficLightObject.toGeo(), trafficLightPosition);
-        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().mapTrafficLightPosition(trafficLightObject.getId(), trafficLightPosition);
-
+        TrafficLightMapping trafficLightMapping = new TrafficLightMapping(trafficLightObject.getId(), trafficLightPosition);
+        getOs().getCellModule().sendV2xMessage(new TrafficLightMappingMessage(getRoutingToServer(), trafficLightMapping));
+        getLog().infoSimTime(this, "[TL Mapping Message] recipient={}, Content[tl={}, original={}, new={}]",
+                config.trafficLightMappingServerName, trafficLightObject.getId(), trafficLightObject.toGeo(), trafficLightPosition);
     }
 
     private boolean vehiclesInFrontOnSameEdge() {
@@ -183,5 +190,34 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a {@link MessageRouting} to the server.
+     *
+     * @return topocast MessageRouting
+     */
+    private MessageRouting getRoutingToServer() {
+        return getOs().getCellModule().createMessageRouting().topoCast(config.trafficLightMappingServerName);
+    }
+
+    @Override
+    public void onMessageReceived(ReceivedV2xMessage receivedV2xMessage) {
+
+    }
+
+    @Override
+    public void onAcknowledgementReceived(ReceivedAcknowledgement acknowledgement) {
+
+    }
+
+    @Override
+    public void onCamBuilding(CamBuilder camBuilder) {
+
+    }
+
+    @Override
+    public void onMessageTransmitted(V2xMessageTransmission v2xMessageTransmission) {
+
     }
 }

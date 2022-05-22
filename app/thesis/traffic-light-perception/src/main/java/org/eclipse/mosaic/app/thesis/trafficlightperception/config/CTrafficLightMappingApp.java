@@ -13,7 +13,7 @@
  * Contact: mosaic@fokus.fraunhofer.de
  */
 
-package org.eclipse.mosaic.app.thesis.trafficlightperception;
+package org.eclipse.mosaic.app.thesis.trafficlightperception.config;
 
 import com.google.gson.annotations.JsonAdapter;
 import org.eclipse.mosaic.lib.util.gson.TimeFieldAdapter;
@@ -21,6 +21,8 @@ import org.eclipse.mosaic.lib.util.gson.UnitFieldAdapter;
 import org.eclipse.mosaic.rti.TIME;
 
 public class CTrafficLightMappingApp {
+
+    public String trafficLightMappingServerName = "server_0";
     /**
      * Perception will be triggered in this interval. [ns]
      */
@@ -29,7 +31,7 @@ public class CTrafficLightMappingApp {
     /**
      * Viewing angle for perception module. [degree]
      */
-    public double viewingAngle = 60d;
+    public double viewingAngle = 75d;
     /**
      * Viewing range for perception module. [m]
      */

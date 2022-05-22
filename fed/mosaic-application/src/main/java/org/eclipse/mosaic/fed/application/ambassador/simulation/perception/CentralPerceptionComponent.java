@@ -15,6 +15,8 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
+import com.google.common.collect.Iterables;
+import org.apache.commons.lang3.Validate;
 import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionGrid;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionIndex;
@@ -31,9 +33,6 @@ import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.PerformanceMonitor;
 import org.eclipse.mosaic.rti.api.InternalFederateException;
-
-import com.google.common.collect.Iterables;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,18 +153,20 @@ public class CentralPerceptionComponent {
     }
 
     /**
-     * TODO
+     * Adds traffic lights to the spatial index, as their positions are static it is sufficient
+     * to store positional information only once
      *
-     * @param trafficLightRegistration
+     * @param trafficLightRegistration the registration interaction
      */
     public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
         spatialIndex.addTrafficLight(trafficLightRegistration);
     }
 
     /**
-     * TODO
+     * Updates the {@link SpatialIndex} in regard to traffic lights. The unit simulator has to be queried as
+     * {@code TrafficLightUpdates} do not contain all necessary information.
      *
-     * @param trafficLightUpdates
+     * @param trafficLightUpdates a list of information packages transmitted by the traffic simulator
      */
     public void updateTrafficLights(TrafficLightUpdates trafficLightUpdates) {
         latestTrafficLightUpdates = trafficLightUpdates;
@@ -173,11 +174,12 @@ public class CentralPerceptionComponent {
     }
 
     /**
-     * TODO
+     * Allows to map the position of a traffic light exactly once. Make sure to measure the proper position.
+     * This is necessary if it is not easily possible to extract the individual traffic light positions from the traffic simulator
      *
-     * @param trafficLightId
-     * @param trafficLightPosition
-     * @return
+     * @param trafficLightId       id of traffic light
+     * @param trafficLightPosition position of the traffic light
+     * @return {@code true} if tl was mapped, else {@code false}
      */
     public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
         return spatialIndex.mapTrafficLightPosition(trafficLightId, trafficLightPosition);
@@ -198,7 +200,7 @@ public class CentralPerceptionComponent {
 
         @Override
         public List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange) {
-            try (PerformanceMonitor.Measurement m = monitor.start("search")) {
+            try (PerformanceMonitor.Measurement m = monitor.start("vehicle_search")) {
                 m.setProperties(getNumberOfVehicles(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
                         .restart();
                 return parent.getVehiclesInRange(searchRange);
@@ -207,7 +209,7 @@ public class CentralPerceptionComponent {
 
         @Override
         public void removeVehicles(Iterable<String> vehiclesToRemove) {
-            try (PerformanceMonitor.Measurement m = monitor.start("remove")) {
+            try (PerformanceMonitor.Measurement m = monitor.start("vehicle_remove")) {
                 m.setProperties(parent.getNumberOfVehicles(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
                         .restart();
                 parent.removeVehicles(vehiclesToRemove);
@@ -216,7 +218,7 @@ public class CentralPerceptionComponent {
 
         @Override
         public void updateVehicles(Iterable<VehicleData> vehiclesToUpdate) {
-            try (PerformanceMonitor.Measurement m = monitor.start("update")) {
+            try (PerformanceMonitor.Measurement m = monitor.start("vehicle_update")) {
                 m.setProperties(getNumberOfVehicles(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
                         .restart();
                 parent.updateVehicles(vehiclesToUpdate);
@@ -230,24 +232,43 @@ public class CentralPerceptionComponent {
 
         @Override
         public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
-            // TODO: add
-            return null;
+            try (PerformanceMonitor.Measurement m = monitor.start("traffic_light_search")) {
+                m.setProperties(getNumberOfTrafficLights(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
+                        .restart();
+                return parent.getTrafficLightsInRange(searchRange);
+            }
         }
 
         @Override
         public void addTrafficLight(TrafficLightRegistration trafficLightRegistration) {
-            // TODO: add
+            try (PerformanceMonitor.Measurement m = monitor.start("traffic_light_add")) {
+                m.setProperties(getNumberOfTrafficLights(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
+                        .restart();
+                parent.addTrafficLight(trafficLightRegistration);
+            }
         }
 
         @Override
         public void updateTrafficLights(Map<String, TrafficLightGroupInfo> trafficLightsToUpdate) {
-            // TODO: add
+            try (PerformanceMonitor.Measurement m = monitor.start("traffic_light_update")) {
+                m.setProperties(getNumberOfTrafficLights(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
+                        .restart();
+                parent.updateTrafficLights(trafficLightsToUpdate);
+            }
         }
 
         @Override
         public boolean mapTrafficLightPosition(String trafficLightId, GeoPoint trafficLightPosition) {
-            // TODO
-            return false;
+            try (PerformanceMonitor.Measurement m = monitor.start("traffic_light_mapping")) {
+                m.setProperties(getNumberOfTrafficLights(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
+                        .restart();
+                return parent.mapTrafficLightPosition(trafficLightId, trafficLightPosition);
+            }
+        }
+
+        @Override
+        public int getNumberOfTrafficLights() {
+            return parent.getNumberOfTrafficLights();
         }
     }
 }
