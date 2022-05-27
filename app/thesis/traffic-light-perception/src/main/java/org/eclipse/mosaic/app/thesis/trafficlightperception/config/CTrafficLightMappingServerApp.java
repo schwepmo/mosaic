@@ -15,6 +15,10 @@
 
 package org.eclipse.mosaic.app.thesis.trafficlightperception.config;
 
+import org.eclipse.mosaic.rti.TIME;
+
+import java.io.File;
+
 public class CTrafficLightMappingServerApp {
     /**
      * Name of the json-file to store the traffic light mappings in.
@@ -25,4 +29,20 @@ public class CTrafficLightMappingServerApp {
      * of the simulation.
      */
     public boolean persistentTrafficLightMapping = true;
+
+
+    // FOR EVALUATION
+    /**
+     * write statistics of mapped tls
+     */
+    public boolean writeCsv = true;
+    public String csvDirectory;
+    /**
+     * will be used in file name of csv
+     */
+    public double penetrationRate = 0.01;
+    /**
+     * will be used in file name of csv
+     */
+    public long perceptionInterval = 1 * TIME.SECOND;
 }

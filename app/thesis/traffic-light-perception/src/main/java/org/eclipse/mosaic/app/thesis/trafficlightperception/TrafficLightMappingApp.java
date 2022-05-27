@@ -14,7 +14,6 @@
  */
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
-import org.apache.commons.lang3.Validate;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingApp;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
@@ -29,6 +28,7 @@ import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
+import org.eclipse.mosaic.interactions.vehicle.VehicleSensorActivation;
 import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.math.Vector3d;
 import org.eclipse.mosaic.lib.math.VectorUtils;
@@ -36,19 +36,21 @@ import org.eclipse.mosaic.lib.objects.road.IRoadPosition;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
+import org.eclipse.mosaic.lib.objects.vehicle.VehicleRoute;
+import org.eclipse.mosaic.lib.objects.vehicle.sensor.SensorValue;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLightMappingApp, VehicleOperatingSystem>
         implements VehicleApplication, CommunicationApplication {
     /**
      * Name to recognise event.
      */
-    private static final String EVENT_RESOURCE = "PERCEPTION";
+    private static final String PERCEPTION_EVENT = "PERCEPTION";
     /**
      * Store configuration here to avoid multiple {@link super#getConfiguration()} calls.
      */
@@ -70,6 +72,7 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
     public void onStartup() {
         getLog().infoSimTime(this, "[Startup] App={}, Vehicle={}.", this.getClass().getSimpleName(), getOs().getId());
         config = getConfiguration();
+//        getOs().activateVehicleSensors(5, VehicleSensorActivation.SensorType.RADAR_FRONT);
         enablePerceptionModule();
         getOs().getCellModule().enable();
         schedulePerception();
@@ -89,7 +92,7 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
     @Override
     public void processEvent(Event event) throws Exception {
         if (event.getResource() != null && event.getResource() instanceof String) {
-            if (event.getResource().equals(EVENT_RESOURCE)) {
+            if (event.getResource().equals(PERCEPTION_EVENT)) {
                 perceiveTrafficLights();
                 schedulePerception();
             }
@@ -106,7 +109,7 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
 
     private void schedulePerception() {
         getOs().getEventManager().newEvent(getOs().getSimulationTime() + config.perceptionInterval, this)
-                .withResource(EVENT_RESOURCE).schedule();
+                .withResource(PERCEPTION_EVENT).schedule();
     }
 
     private void perceiveTrafficLights() {
@@ -130,7 +133,7 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
         if (trafficLightObject.isMapped()) { // TLs can only be mapped once
             return;
         }
-        if (vehiclesInFrontOnSameEdge()) { // this vehicle is the first in queue
+        if (vehiclesInFront()) { // this vehicle is the first in queue
             return;
         }
         if (currentPosition == null || previousPosition == null
@@ -167,6 +170,12 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
         return false;
     }
 
+    private boolean vehiclesInFront() {
+        return getOs().getVehicleData() != null
+                && getOs().getVehicleData().getVehicleSensors().distance.front.status
+                .equals(SensorValue.SensorStatus.VEHICLE_DETECTED);
+    }
+
     private double getDistanceToTrafficLight(TrafficLightObject trafficLightObject) {
         return getOs().getPosition().distanceTo(trafficLightObject.getProjectedPosition().toGeo());
     }
@@ -179,13 +188,16 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
     }
 
     private String getNextConnectionOnRoute() {
+        VehicleRoute currentRoute = getOs().getNavigationModule().getCurrentRoute();
+        if (currentRoute == null) {
+            return null;
+        }
+        List<String> routeConnections = getOs().getNavigationModule().getCurrentRoute().getConnectionIds();
         String currentConnection = getOs().getRoadPosition().getConnectionId();
-        List<String> currentRoute = Validate.notNull(getOs().getNavigationModule().getCurrentRoute(),
-                "Currently no route available").getConnectionIds();
-        for (int i = 0; i < currentRoute.size(); i++) {
-            if (currentRoute.get(i).equals(currentConnection)) {
-                if (i < currentRoute.size() - 1) {
-                    return currentRoute.get(i + 1);
+        for (int i = 0; i < routeConnections.size(); i++) {
+            if (routeConnections.get(i).equals(currentConnection)) {
+                if (i < routeConnections.size() - 1) {
+                    return routeConnections.get(i + 1);
                 }
             }
         }

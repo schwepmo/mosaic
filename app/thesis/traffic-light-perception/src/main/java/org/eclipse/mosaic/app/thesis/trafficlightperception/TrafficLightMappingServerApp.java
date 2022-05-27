@@ -15,9 +15,6 @@
 
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingServerApp;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
@@ -25,17 +22,35 @@ import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
 import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.ServerOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
+import org.eclipse.mosaic.lib.geo.GeoPoint;
+import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
+import org.eclipse.mosaic.rti.TIME;
 
-import java.io.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TrafficLightMappingServerApp
@@ -48,6 +63,13 @@ public class TrafficLightMappingServerApp
 
     private Map<String, TrafficLightMapping> mappedTrafficLights;
 
+    private PrintWriter printWriter;
+
+    private final StringBuilder stringBuilder = new StringBuilder();
+
+    private final long startTime = System.currentTimeMillis();
+
+
     public TrafficLightMappingServerApp() {
         super(CTrafficLightMappingServerApp.class);
     }
@@ -57,13 +79,33 @@ public class TrafficLightMappingServerApp
         getLog().infoSimTime(this, "[Startup] App={}, Unit={}.", this.getClass().getSimpleName(), getOs().getId());
         config = getConfiguration();
         if (config.persistentTrafficLightMapping) {
-            mappedTrafficLightsFile = new File(getOs().getConfigurationPath(), getConfiguration().trafficLightMappingFileName);
+            mappedTrafficLightsFile = new File(getOs().getConfigurationPath(), config.trafficLightMappingFileName);
             if (mappedTrafficLightsFile.exists()) {
                 readMappedTrafficLights();
             }
-
+        }
+        if (mappedTrafficLights == null) {
+            mappedTrafficLights = new HashMap<>();
         }
         getOs().getCellModule().enable();
+        if (config.writeCsv) {
+            File csv = new File(config.csvDirectory != null ? new File(config.csvDirectory) : getOs().getConfigurationPath(),
+                    "PenRate(" + config.penetrationRate + ")-PerceptionInterval(" + config.perceptionInterval + ")-tl_mappings.csv");
+            if (csv.exists()) {
+                csv.delete();
+            }
+            try {
+                csv.createNewFile();
+                printWriter = new PrintWriter(csv);
+            } catch (IOException ignored) {
+            }
+            scheduleLogging();
+        }
+    }
+
+    private void scheduleLogging() {
+        getOs().getEventManager().newEvent(getOs().getSimulationTime() + 1 * TIME.SECOND, this)
+                .withResource("LOG").schedule();
     }
 
     @Override
@@ -71,7 +113,11 @@ public class TrafficLightMappingServerApp
         if (config.persistentTrafficLightMapping) {
             storeMappedTrafficLights();
         }
-
+        if (config.writeCsv) {
+            stringBuilder.append(System.currentTimeMillis() - startTime);
+            printWriter.write(stringBuilder.toString());
+            printWriter.close();
+        }
     }
 
     private void readMappedTrafficLights() {
@@ -81,9 +127,6 @@ public class TrafficLightMappingServerApp
             mappedTrafficLights = new Gson().fromJson(reader, tlMappingType);
         } catch (IOException e) {
             getLog().warnSimTime(this, "Couldn't read mapped TLs.");
-        }
-        if (mappedTrafficLights == null) {
-            mappedTrafficLights = new HashMap<>();
         }
         for (TrafficLightMapping trafficLightMapping : mappedTrafficLights.values()) {
             if (SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().mapTrafficLightPosition(
@@ -98,6 +141,9 @@ public class TrafficLightMappingServerApp
     }
 
     private void storeMappedTrafficLights() {
+        if (mappedTrafficLights == null || mappedTrafficLights.size() == 0) {
+            return;
+        }
         try {
             mappedTrafficLightsFile.createNewFile();
             getLog().infoSimTime(this, "[File Creation] Created TL mapping file.");
@@ -114,7 +160,38 @@ public class TrafficLightMappingServerApp
 
     @Override
     public void processEvent(Event event) throws Exception {
+        if (event.getResource() != null && event.getResource() instanceof String) {
+            if (event.getResource().equals("LOG")) {
+                if (config.writeCsv) {
+                    logMappedTrafficLights();
+                    scheduleLogging();
+                }
+            }
+        }
 
+    }
+
+    private void logMappedTrafficLights() {
+        List<TrafficLightObject> allTrafficLights = SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().getSpatialIndex().getTrafficLightsInRange(new PerceptionRange() {
+            @Override
+            public boolean isInRange(SpatialObject other) {
+                return true;
+            }
+
+            @Override
+            public BoundingBox getBoundingBox() {
+                BoundingBox boundingBox = new BoundingBox();
+                boundingBox.add(GeoPoint.latLon(52.493085, 13.291807).toVector3d());
+                boundingBox.add(GeoPoint.latLon(52.529089, 13.347299).toVector3d());
+                return boundingBox;
+            }
+        });
+        stringBuilder.append(getOs().getSimulationTime());
+        stringBuilder.append(",");
+        stringBuilder.append(allTrafficLights.stream().filter(TrafficLightObject::isMapped).count());
+        stringBuilder.append(",");
+        stringBuilder.append(allTrafficLights.size());
+        stringBuilder.append("\n");
     }
 
     @Override
