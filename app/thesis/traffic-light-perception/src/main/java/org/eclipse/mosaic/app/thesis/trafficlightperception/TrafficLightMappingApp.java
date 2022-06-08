@@ -14,6 +14,8 @@
  */
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
+import static java.lang.Math.abs;
+
 import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingApp;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
@@ -28,20 +30,16 @@ import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
-import org.eclipse.mosaic.interactions.vehicle.VehicleSensorActivation;
 import org.eclipse.mosaic.lib.geo.GeoPoint;
 import org.eclipse.mosaic.lib.math.Vector3d;
 import org.eclipse.mosaic.lib.math.VectorUtils;
-import org.eclipse.mosaic.lib.objects.road.IRoadPosition;
 import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleRoute;
-import org.eclipse.mosaic.lib.objects.vehicle.sensor.SensorValue;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -72,7 +70,6 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
     public void onStartup() {
         getLog().infoSimTime(this, "[Startup] App={}, Vehicle={}.", this.getClass().getSimpleName(), getOs().getId());
         config = getConfiguration();
-//        getOs().activateVehicleSensors(5, VehicleSensorActivation.SensorType.RADAR_FRONT);
         enablePerceptionModule();
         getOs().getCellModule().enable();
         schedulePerception();
@@ -155,25 +152,30 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
                 config.trafficLightMappingServerName, trafficLightObject.getId(), trafficLightObject.toGeo(), trafficLightPosition);
     }
 
-    private boolean vehiclesInFrontOnSameEdge() {
+    private boolean vehiclesInFront() {
         List<VehicleObject> perceivedVehicles = getOs().getPerceptionModule().getPerceivedVehicles();
         if (perceivedVehicles.isEmpty()) {
             return false;
         }
         for (VehicleObject vehicleObject : perceivedVehicles) { // check if any vehicles are in front of ego-vehicle
-            IRoadPosition otherVehiclePosition = getOs().getNavigationModule().getClosestRoadPosition(vehicleObject.toGeo());
-            if (Objects.equals(otherVehiclePosition.getConnectionId(), getOs().getRoadPosition().getConnectionId())
-                /*&& otherVehiclePosition.getLaneIndex() == getOs().getRoadPosition().getLaneIndex()*/) { // FIXME: Lane is not set in getClosestRoadPosition
+            if (getOs().getRoadPosition().getConnectionId().equals(vehicleObject.getEdgeId())
+                    && getOs().getRoadPosition().getLaneIndex() == vehicleObject.getLaneIndex()
+                    && isInFront(vehicleObject)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean vehiclesInFront() {
-        return getOs().getVehicleData() != null
-                && getOs().getVehicleData().getVehicleSensors().distance.front.status
-                .equals(SensorValue.SensorStatus.VEHICLE_DETECTED);
+    private final Vector3d headingVector = new Vector3d();
+    private final Vector3d relativePositionVector = new Vector3d();
+
+    private boolean isInFront(VehicleObject vehicleObject) {
+        synchronized (headingVector) {
+            VectorUtils.getDirectionVectorFromHeading(getOs().getVehicleData().getHeading(), headingVector);
+            vehicleObject.subtract(getOs().getPosition().toVector3d(), relativePositionVector);
+            return abs(headingVector.angle(relativePositionVector)) <= Math.PI;
+        }
     }
 
     private double getDistanceToTrafficLight(TrafficLightObject trafficLightObject) {
