@@ -159,17 +159,17 @@ public class SimplePerceptionModuleTest {
     }
 
     @Test
-    public void vehicleCannotBePerceived_OnLeftBoundVector_QuadTree() {
+    public void vehicleCanBePerceived_OnLeftBoundVector_QuadTree() {
         useQuadTree();
         setupSpatialIndex(new MutableCartesianPoint(110, 110, 0));
-        assertEquals(0, simplePerceptionModule.getPerceivedVehicles().size());
+        assertEquals(1, simplePerceptionModule.getPerceivedVehicles().size());
     }
 
     @Test
-    public void vehicleCannotBePerceived_OnRightBoundVector_QuadTree() {
+    public void vehicleCanBePerceived_OnRightBoundVector_QuadTree() {
         useQuadTree();
         setupSpatialIndex(new MutableCartesianPoint(110, 90, 0));
-        assertEquals(0, simplePerceptionModule.getPerceivedVehicles().size());
+        assertEquals(1, simplePerceptionModule.getPerceivedVehicles().size());
     }
 
     @Test
@@ -217,17 +217,17 @@ public class SimplePerceptionModuleTest {
     }
 
     @Test
-    public void vehicleCannotBePerceived_OnLeftBoundVector_Grid() {
+    public void vehicleCan_BePerceived_OnLeftBoundVector_Grid() {
         useGrid();
         setupSpatialIndex(new MutableCartesianPoint(110, 110, 0));
-        assertEquals(0, simplePerceptionModule.getPerceivedVehicles().size());
+        assertEquals(1, simplePerceptionModule.getPerceivedVehicles().size());
     }
 
     @Test
-    public void vehicleCannotBePerceived_OnRightBoundVector_Grid() {
+    public void vehicleCanBePerceived_OnRightBoundVector_Grid() {
         useGrid();
         setupSpatialIndex(new MutableCartesianPoint(110, 90, 0));
-        assertEquals(0, simplePerceptionModule.getPerceivedVehicles().size());
+        assertEquals(1, simplePerceptionModule.getPerceivedVehicles().size());
     }
 
     @Test
