@@ -189,6 +189,8 @@ public class SimplePerceptionModule implements PerceptionModule<SimplePerception
                 // getting the direction vector of the heading from origin (result is written into direction)
                 VectorUtils.getDirectionVectorFromHeading(heading, directionVector);
                 double viewingAngleRadHalf = toRadians(configuration.getViewingAngle()) / 2;
+                // scale vector by range for minimum bounding rectangle
+                directionVector.multiply(configuration.getViewingRange());
                 // rotate the direction vector to the right
                 rightBoundVector.set(directionVector).rotate(-viewingAngleRadHalf, VectorUtils.UP);
                 // rotate the direction vector to the left
