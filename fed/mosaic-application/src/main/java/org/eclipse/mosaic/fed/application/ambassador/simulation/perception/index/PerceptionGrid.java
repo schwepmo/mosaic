@@ -70,7 +70,8 @@ public class PerceptionGrid extends AbstractPerceptionIndex {
         vehiclesToUpdate.forEach(v -> {
             VehicleObject vehicleObject = indexedVehicles.get(v.getName());
             if (vehicleObject == null) {
-                vehicleObject = new VehicleObject(v.getName()).setPosition(v.getProjectedPosition());
+                vehicleObject = new VehicleObject(v.getName())
+                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
                 if (vehicleGrid.addItem(vehicleObject)) {
                     indexedVehicles.put(v.getName(), vehicleObject);
                 }
@@ -78,7 +79,7 @@ public class PerceptionGrid extends AbstractPerceptionIndex {
             vehicleObject
                     .setHeading(v.getHeading())
                     .setSpeed(v.getSpeed())
-                    .setPosition(v.getProjectedPosition());
+                    .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
 
         });
         vehicleGrid.updateGrid();

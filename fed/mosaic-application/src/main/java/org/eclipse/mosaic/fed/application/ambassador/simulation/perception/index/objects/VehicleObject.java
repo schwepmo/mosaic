@@ -25,9 +25,12 @@ public class VehicleObject extends Vector3d implements SpatialObject {
 
     private final String id;
     private final MutableCartesianPoint cartesianPosition = new MutableCartesianPoint();
-
     private double speed;
     private double heading;
+
+    private String edgeId;
+
+    private int laneIndex;
 
     public VehicleObject(String id) {
         this.id = id;
@@ -38,8 +41,10 @@ public class VehicleObject extends Vector3d implements SpatialObject {
         return id;
     }
 
-    public VehicleObject setPosition(CartesianPoint position) {
+    public VehicleObject setPosition(CartesianPoint position, String edgeId, int laneIndex) {
         this.cartesianPosition.set(position);
+        this.edgeId = edgeId;
+        this.laneIndex = laneIndex;
         position.toVector3d(this);
         return this;
     }
@@ -47,6 +52,14 @@ public class VehicleObject extends Vector3d implements SpatialObject {
     @Override
     public CartesianPoint getProjectedPosition() {
         return cartesianPosition;
+    }
+
+    public String getEdgeId() {
+        return edgeId;
+    }
+
+    public int getLaneIndex() {
+        return laneIndex;
     }
 
     public VehicleObject setSpeed(double speed) {
@@ -83,6 +96,8 @@ public class VehicleObject extends Vector3d implements SpatialObject {
                 .appendSuper(super.equals(o))
                 .append(speed, that.speed)
                 .append(heading, that.heading)
+                .append(edgeId, that.edgeId)
+                .append(laneIndex, that.laneIndex)
                 .append(id, that.id)
                 .append(cartesianPosition, that.cartesianPosition)
                 .isEquals();

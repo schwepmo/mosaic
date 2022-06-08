@@ -17,12 +17,9 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.inde
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObjectAdapter;
-import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.spatial.QuadTree;
@@ -78,7 +75,8 @@ public class PerceptionTree extends AbstractPerceptionIndex {
         vehiclesToUpdate.forEach(v -> {
             VehicleObject vehicleObject = indexedVehicles.get(v.getName());
             if (vehicleObject == null) {
-                vehicleObject = new VehicleObject(v.getName()).setPosition(v.getProjectedPosition());
+                vehicleObject = new VehicleObject(v.getName())
+                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
                 if (vehicleTree.addItem(vehicleObject)) {
                     indexedVehicles.put(v.getName(), vehicleObject);
                 }
@@ -86,7 +84,7 @@ public class PerceptionTree extends AbstractPerceptionIndex {
             vehicleObject
                     .setHeading(v.getHeading())
                     .setSpeed(v.getSpeed())
-                    .setPosition(v.getProjectedPosition());
+                    .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
 
         });
         vehicleTree.updateTree();

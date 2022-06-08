@@ -17,13 +17,7 @@ package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.inde
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
-import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
-import org.eclipse.mosaic.lib.geo.GeoPoint;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroup;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightState;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 
 import java.util.HashMap;
@@ -56,7 +50,7 @@ public class PerceptionIndex extends AbstractPerceptionIndex {
                 (v) -> indexedVehicles.computeIfAbsent(v.getName(), VehicleObject::new)
                         .setHeading(v.getHeading())
                         .setSpeed(v.getSpeed())
-                        .setPosition(v.getProjectedPosition())
+                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex())
         );
     }
 

@@ -57,12 +57,22 @@ public class SurroundingVehicle implements Serializable {
      * Unit: [degrees from north clockwise]
      */
     private final double heading;
+    /**
+     * The current edge of the surrounding vehicle.
+     */
+    private final String edgeId;
+    /**
+     * The current lane index.
+     */
+    private final int laneIndex;
 
-    public SurroundingVehicle(String id, Position position, double speed, double heading) {
+    public SurroundingVehicle(String id, Position position, double speed, double heading, String edgeId, int laneIndex) {
         this.id = id;
         this.position = position;
         this.speed = speed;
         this.heading = heading;
+        this.edgeId = edgeId;
+        this.laneIndex = laneIndex;
     }
 
     /**
@@ -102,6 +112,14 @@ public class SurroundingVehicle implements Serializable {
         return heading;
     }
 
+    public String getEdgeId() {
+        return edgeId;
+    }
+
+    public int getLaneIndex() {
+        return laneIndex;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -119,6 +137,8 @@ public class SurroundingVehicle implements Serializable {
                 .append(heading, that.heading)
                 .append(id, that.id)
                 .append(position, that.position)
+                .append(edgeId, that.edgeId)
+                .append(laneIndex, that.laneIndex)
                 .isEquals();
     }
 
@@ -129,6 +149,8 @@ public class SurroundingVehicle implements Serializable {
                 .append(position)
                 .append(speed)
                 .append(heading)
+                .append(edgeId)
+                .append(laneIndex)
                 .toHashCode();
     }
 
@@ -139,6 +161,8 @@ public class SurroundingVehicle implements Serializable {
                 .append("position", position)
                 .append("speed", speed)
                 .append("heading", heading)
+                .append("edgeId", heading)
+                .append("laneIndex", laneIndex)
                 .toString();
     }
 }
