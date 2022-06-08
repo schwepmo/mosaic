@@ -15,7 +15,6 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
