@@ -158,7 +158,8 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
             return false;
         }
         for (VehicleObject vehicleObject : perceivedVehicles) { // check if any vehicles are in front of ego-vehicle
-            if (getOs().getRoadPosition().getConnectionId().equals(vehicleObject.getEdgeId())
+            if (vehicleObject.getEdgeId() != null
+                    && getOs().getRoadPosition().getConnectionId().equals(vehicleObject.getEdgeId())
                     && getOs().getRoadPosition().getLaneIndex() == vehicleObject.getLaneIndex()
                     && isInFront(vehicleObject)) {
                 return true;
@@ -170,6 +171,12 @@ public class TrafficLightMappingApp extends ConfigurableApplication<CTrafficLigh
     private final Vector3d headingVector = new Vector3d();
     private final Vector3d relativePositionVector = new Vector3d();
 
+    /**
+     * Evaluates if the given vehicle is in Front or behind the ego vehicle by
+     * checking if the angle is less than +/- 90 degrees.
+     * @param vehicleObject vehicle to determine position of
+     * @return {@code true} if vehicle is in front, otherwise {@code false}
+     */
     private boolean isInFront(VehicleObject vehicleObject) {
         synchronized (headingVector) {
             VectorUtils.getDirectionVectorFromHeading(getOs().getVehicleData().getHeading(), headingVector);
