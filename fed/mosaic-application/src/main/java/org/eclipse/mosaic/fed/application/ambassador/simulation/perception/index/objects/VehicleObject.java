@@ -21,6 +21,8 @@ import org.eclipse.mosaic.lib.math.Vector3d;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import javax.annotation.Nullable;
+
 public class VehicleObject extends Vector3d implements SpatialObject {
 
     private final String id;
@@ -41,7 +43,7 @@ public class VehicleObject extends Vector3d implements SpatialObject {
         return id;
     }
 
-    public VehicleObject setPosition(CartesianPoint position, String edgeId, int laneIndex) {
+    public VehicleObject setPosition(CartesianPoint position) {
         this.cartesianPosition.set(position);
         this.edgeId = edgeId;
         this.laneIndex = laneIndex;
@@ -54,6 +56,13 @@ public class VehicleObject extends Vector3d implements SpatialObject {
         return cartesianPosition;
     }
 
+    public VehicleObject setEdgeAndLane(String edgeId, int laneIndex) {
+        this.edgeId = edgeId;
+        this.laneIndex = laneIndex;
+        return this;
+    }
+
+    @Nullable
     public String getEdgeId() {
         return edgeId;
     }

@@ -17,13 +17,9 @@
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObjectAdapter;
-import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
 import org.eclipse.mosaic.lib.geo.CartesianRectangle;
-import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.spatial.Grid;
@@ -71,7 +67,7 @@ public class PerceptionGrid extends AbstractPerceptionIndex {
             VehicleObject vehicleObject = indexedVehicles.get(v.getName());
             if (vehicleObject == null) {
                 vehicleObject = new VehicleObject(v.getName())
-                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+                        .setPosition(v.getProjectedPosition());
                 if (vehicleGrid.addItem(vehicleObject)) {
                     indexedVehicles.put(v.getName(), vehicleObject);
                 }
@@ -79,8 +75,12 @@ public class PerceptionGrid extends AbstractPerceptionIndex {
             vehicleObject
                     .setHeading(v.getHeading())
                     .setSpeed(v.getSpeed())
-                    .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
-
+                    .setPosition(v.getProjectedPosition());
+            if (v.getRoadPosition() == null) {
+                vehicleObject.setEdgeAndLane(null, -1);
+            } else {
+                vehicleObject.setEdgeAndLane(v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+            }
         });
         vehicleGrid.updateGrid();
     }

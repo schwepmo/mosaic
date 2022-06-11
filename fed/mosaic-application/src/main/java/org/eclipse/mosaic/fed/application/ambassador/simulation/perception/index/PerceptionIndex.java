@@ -47,10 +47,17 @@ public class PerceptionIndex extends AbstractPerceptionIndex {
     @Override
     public void updateVehicles(Iterable<VehicleData> vehiclesToUpdate) {
         vehiclesToUpdate.forEach(
-                (v) -> indexedVehicles.computeIfAbsent(v.getName(), VehicleObject::new)
+                v -> {
+                    VehicleObject vehicleObject = indexedVehicles.computeIfAbsent(v.getName(), VehicleObject::new)
                         .setHeading(v.getHeading())
                         .setSpeed(v.getSpeed())
-                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex())
+                        .setPosition(v.getProjectedPosition());
+                    if (v.getRoadPosition() == null) {
+                        vehicleObject.setEdgeAndLane(null, -1);
+                    } else {
+                        vehicleObject.setEdgeAndLane(v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+                    }
+                }
         );
     }
 

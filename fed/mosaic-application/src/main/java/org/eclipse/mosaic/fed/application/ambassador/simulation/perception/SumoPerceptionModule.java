@@ -45,7 +45,8 @@ public class SumoPerceptionModule implements PerceptionModule<SimplePerceptionCo
     public List<VehicleObject> getPerceivedVehicles() {
         return owner.getVehicleData().getVehiclesInSight().stream()
                 .map(v -> new VehicleObject(v.getId())
-                        .setPosition(v.getProjectedPosition(), v.getEdgeId(), v.getLaneIndex())
+                        .setPosition(v.getProjectedPosition())
+                        .setEdgeAndLane(v.getEdgeId(), v.getLaneIndex())
                         .setSpeed(v.getSpeed())
                         .setHeading(v.getHeading())
                 ).collect(Collectors.toList());

@@ -76,7 +76,7 @@ public class PerceptionTree extends AbstractPerceptionIndex {
             VehicleObject vehicleObject = indexedVehicles.get(v.getName());
             if (vehicleObject == null) {
                 vehicleObject = new VehicleObject(v.getName())
-                        .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+                        .setPosition(v.getProjectedPosition());
                 if (vehicleTree.addItem(vehicleObject)) {
                     indexedVehicles.put(v.getName(), vehicleObject);
                 }
@@ -84,7 +84,12 @@ public class PerceptionTree extends AbstractPerceptionIndex {
             vehicleObject
                     .setHeading(v.getHeading())
                     .setSpeed(v.getSpeed())
-                    .setPosition(v.getProjectedPosition(), v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+                    .setPosition(v.getProjectedPosition());
+            if (v.getRoadPosition() == null) {
+                vehicleObject.setEdgeAndLane(null, -1);
+            } else {
+                vehicleObject.setEdgeAndLane(v.getRoadPosition().getConnectionId(), v.getRoadPosition().getLaneIndex());
+            }
 
         });
         vehicleTree.updateTree();
