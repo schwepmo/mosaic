@@ -35,7 +35,7 @@ public class CTrafficLightMappingServerApp {
     /**
      * write statistics of mapped tls
      */
-    public boolean writeCsv = true;
+    public boolean writeCsv = false;
     public String csvDirectory;
     /**
      * will be used in file name of csv
