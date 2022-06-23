@@ -223,7 +223,7 @@ public class SimplePerceptionModuleTest {
     }
 
     @Test
-    public void vehicleCan_BePerceived_OnLeftBoundVector_Grid() {
+    public void vehicleCanBePerceived_OnLeftBoundVector_Grid() {
         useGrid();
         setupSpatialIndex(new MutableCartesianPoint(110, 110, 0));
         assertEquals(1, simplePerceptionModule.getPerceivedVehicles().size());

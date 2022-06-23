@@ -153,15 +153,13 @@ public class SimplePerceptionModule implements PerceptionModule<SimplePerception
                 // we use tmpVector2 as origin from the viewpoint of this object
                 tmpVector2.set(0, 0, 0);
 
-                if (tmpVector1.magnitude() > configuration.getViewingRange()) { // other vehicle is in range
+                if (tmpVector1.magnitude() > configuration.getViewingRange()) { // other vehicle is NOT in range
                     return false;
                 }
                 if (MathUtils.isFuzzyEqual(configuration.getViewingAngle(), 360d)) { // for 360 degree viewing angle field-of-view check is obsolete
                     return true;
                 } else if (configuration.getViewingAngle() < 180d) { // for < 180 degree viewing angle we use left and right vector
                     return isBetweenVectors(tmpVector1, tmpVector2, leftBoundVector, rightBoundVector)
-                            || liesOnVector(tmpVector1, leftBoundVector)
-                            || liesOnVector(tmpVector1, rightBoundVector)
                             || liesOnVector(tmpVector1, leftBoundVector)
                             || liesOnVector(tmpVector1, rightBoundVector);
                 } else { // for >= 180 degree do two checks: 1st between direction vector and right or 2nd between direction vector and left
