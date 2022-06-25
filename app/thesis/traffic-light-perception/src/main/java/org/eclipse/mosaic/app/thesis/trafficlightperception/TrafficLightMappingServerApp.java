@@ -15,6 +15,9 @@
 
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingServerApp;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
@@ -29,23 +32,13 @@ import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
 import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.ServerOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
-import org.eclipse.mosaic.lib.geo.GeoPoint;
+import org.eclipse.mosaic.lib.geo.CartesianRectangle;
+import org.eclipse.mosaic.lib.routing.database.DatabaseRouting;
 import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -172,6 +165,10 @@ public class TrafficLightMappingServerApp
     }
 
     private void logMappedTrafficLights() {
+        CartesianRectangle bounds = ((DatabaseRouting) SimulationKernel.SimulationKernel
+                .getCentralNavigationComponent().getRouting()).getScenarioBounds();
+        BoundingBox boundingArea = new BoundingBox();
+        boundingArea.add(bounds.getA().toVector3d(), bounds.getB().toVector3d());
         List<TrafficLightObject> allTrafficLights = SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().getSpatialIndex().getTrafficLightsInRange(new PerceptionRange() {
             @Override
             public boolean isInRange(SpatialObject other) {
@@ -180,10 +177,7 @@ public class TrafficLightMappingServerApp
 
             @Override
             public BoundingBox getBoundingBox() {
-                BoundingBox boundingBox = new BoundingBox();
-                boundingBox.add(GeoPoint.latLon(52.493085, 13.291807).toVector3d());
-                boundingBox.add(GeoPoint.latLon(52.529089, 13.347299).toVector3d());
-                return boundingBox;
+                return boundingArea;
             }
         });
         stringBuilder.append(getOs().getSimulationTime());
