@@ -23,6 +23,11 @@ import java.util.List;
 public interface PerceptionModule<ConfigT extends PerceptionModuleConfiguration> {
 
     /**
+     * Returns The configuration of the {@link PerceptionModule}.
+     */
+    PerceptionModuleConfiguration getConfiguration();
+
+    /**
      * Enables and configures this perception module.
      *
      * @param configuration the configuration object
@@ -33,9 +38,14 @@ public interface PerceptionModule<ConfigT extends PerceptionModuleConfiguration>
      * Call to get all vehicles within perception range.
      *
      * @return a list of all {@link VehicleObject}s inside the perception range of this vehicle.
+     * Returns {@code true} if {@link PerceptionModule} is enabled, otherwise {@code false}.
+     */
+    boolean isEnabled();
+
+    /**
+     * Returns a list of all {@link VehicleObject}s inside the perception range of this vehicle.
      */
     List<VehicleObject> getPerceivedVehicles();
-
     /**
      * Call to get all traffic lights within perception range.
      *

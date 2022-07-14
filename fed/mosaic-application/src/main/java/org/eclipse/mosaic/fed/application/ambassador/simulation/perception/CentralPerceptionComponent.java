@@ -81,6 +81,8 @@ public class CentralPerceptionComponent {
 
     /**
      * Initializes the spatial index used for perception.
+     *
+     * @throws InternalFederateException if perception backend wasn't properly defined
      */
     public void initialize() throws InternalFederateException {
         try {
@@ -186,7 +188,7 @@ public class CentralPerceptionComponent {
     }
 
     /**
-     * Wrapper class to measure atomic calls of update, search and remove of the used spatial index
+     * Wrapper class to measure atomic calls of update, search and remove of the used spatial index.
      */
     static class MonitoringSpatialIndex implements SpatialIndex {
 
@@ -199,7 +201,7 @@ public class CentralPerceptionComponent {
         }
 
         @Override
-        public List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange) {
+        public List<VehicleObject> getVehiclesInRange(PerceptionModel searchRange) {
             try (PerformanceMonitor.Measurement m = monitor.start("vehicle_search")) {
                 m.setProperties(getNumberOfVehicles(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
                         .restart();

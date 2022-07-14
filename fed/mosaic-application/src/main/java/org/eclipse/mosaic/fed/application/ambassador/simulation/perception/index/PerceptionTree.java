@@ -15,7 +15,7 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionModel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObjectAdapter;
@@ -56,7 +56,7 @@ public class PerceptionTree extends AbstractPerceptionIndex {
     }
 
     @Override
-    public List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange) {
+    public List<VehicleObject> getVehiclesInRange(PerceptionModel searchRange) {
         return vehicleTree.getObjectsInBoundingArea(searchRange.getBoundingBox(), searchRange::isInRange, new ArrayList<>());
     }
 
