@@ -30,7 +30,7 @@ public interface PerceptionModuleOwner {
     /**
      * Sends the given {@link Interaction} to the runtime infrastructure.
      *
-     * @param interaction the {@link Interaction} to be send
+     * @param interaction the {@link Interaction} to be sent
      */
     void sendInteractionToRti(Interaction interaction);
 

@@ -15,9 +15,6 @@
 
 package org.eclipse.mosaic.app.thesis.trafficlightperception;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.config.CTrafficLightMappingServerApp;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.messages.TrafficLightMappingMessage;
 import org.eclipse.mosaic.app.thesis.trafficlightperception.payloads.TrafficLightMapping;
@@ -25,7 +22,8 @@ import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionModel;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionModuleOwner;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
@@ -38,7 +36,18 @@ import org.eclipse.mosaic.lib.spatial.BoundingBox;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
-import java.io.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -169,10 +178,15 @@ public class TrafficLightMappingServerApp
                 .getCentralNavigationComponent().getRouting()).getScenarioBounds();
         BoundingBox boundingArea = new BoundingBox();
         boundingArea.add(bounds.getA().toVector3d(), bounds.getB().toVector3d());
-        List<TrafficLightObject> allTrafficLights = SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().getSpatialIndex().getTrafficLightsInRange(new PerceptionRange() {
+        List<TrafficLightObject> allTrafficLights = SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().getSpatialIndex().getTrafficLightsInRange(new PerceptionModel() {
             @Override
             public boolean isInRange(SpatialObject other) {
                 return true;
+            }
+
+            @Override
+            public List<SpatialObject> applyPerceptionModifiers(PerceptionModuleOwner owner, List<SpatialObject> perceivedVehicles) {
+                return perceivedVehicles;
             }
 
             @Override

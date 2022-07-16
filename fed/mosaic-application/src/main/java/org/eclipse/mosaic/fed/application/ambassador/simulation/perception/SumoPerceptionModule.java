@@ -15,10 +15,10 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.app.api.perception.PerceptionModule;
-import org.eclipse.mosaic.fed.application.app.api.perception.PerceptionModuleConfiguration;
 import org.eclipse.mosaic.interactions.vehicle.VehicleSightDistanceConfiguration;
 
 import java.util.List;
@@ -68,7 +68,13 @@ public class SumoPerceptionModule implements PerceptionModule<SimplePerceptionCo
     }
 
     @Override
-    public PerceptionModuleConfiguration getConfiguration() {
+    public List<SpatialObject> getPerceivedObjects() {
+        // TODO: add this
+        return null;
+    }
+
+    @Override
+    public SimplePerceptionConfiguration getConfiguration() {
         return configuration;
     }
 

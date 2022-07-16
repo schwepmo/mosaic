@@ -52,6 +52,16 @@ public class TrafficLightObject extends Vector3d implements SpatialObject {
         return projectedPosition;
     }
 
+    @Override
+    public Vector3d getPosition() {
+        return this;
+    }
+
+    @Override
+    public void setPosition(double x, double y, double z) {
+        this.set(x, y, z);
+    }
+
     public TrafficLightObject setPosition(CartesianPoint position) {
         if (!mapped) {
             this.projectedPosition.set(position);
@@ -64,9 +74,8 @@ public class TrafficLightObject extends Vector3d implements SpatialObject {
         return mapped;
     }
 
-    public TrafficLightObject setMapped() {
+    public void setMapped() {
         mapped = true;
-        return this;
     }
 
     public String getTrafficLightGroupId() {

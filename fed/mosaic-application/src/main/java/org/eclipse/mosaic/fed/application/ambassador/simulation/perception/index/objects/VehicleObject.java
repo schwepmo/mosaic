@@ -56,6 +56,16 @@ public class VehicleObject extends Vector3d implements SpatialObject {
         return cartesianPosition;
     }
 
+    @Override
+    public Vector3d getPosition() {
+        return this;
+    }
+
+    @Override
+    public void setPosition(double x, double y, double z) {
+        this.set(x, y, z);
+    }
+
     public VehicleObject setEdgeAndLane(String edgeId, int laneIndex) {
         this.edgeId = edgeId;
         this.laneIndex = laneIndex;

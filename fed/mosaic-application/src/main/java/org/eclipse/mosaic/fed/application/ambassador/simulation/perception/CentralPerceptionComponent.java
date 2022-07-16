@@ -233,11 +233,11 @@ public class CentralPerceptionComponent {
         }
 
         @Override
-        public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+        public List<TrafficLightObject> getTrafficLightsInRange(PerceptionModel perceptionModel) {
             try (PerformanceMonitor.Measurement m = monitor.start("traffic_light_search")) {
                 m.setProperties(getNumberOfTrafficLights(), SimulationKernel.SimulationKernel.getCurrentSimulationTime())
                         .restart();
-                return parent.getTrafficLightsInRange(searchRange);
+                return parent.getTrafficLightsInRange(perceptionModel);
             }
         }
 

@@ -16,6 +16,7 @@
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.lib.spatial.BoundingBox;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public interface PerceptionModel {
      */
     boolean isInRange(SpatialObject other);
 
-    List<VehicleObject> applyPerceptionModifiers(PerceptionModuleOwner owner, List<VehicleObject> perceivedVehicles);
+    List<SpatialObject> applyPerceptionModifiers(PerceptionModuleOwner owner, List<SpatialObject> perceivedVehicles);
 
     /**
      * Returns the minimum bounding box around this perception area. This is used for range search queries in the perception index.

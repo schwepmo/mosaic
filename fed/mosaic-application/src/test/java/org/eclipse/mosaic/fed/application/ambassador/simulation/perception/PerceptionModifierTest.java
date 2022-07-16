@@ -15,6 +15,7 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,8 @@ import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.error
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.errormodels.PositionErrorModifier;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.errormodels.SimpleOcclusionModifier;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionIndex;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.SpatialObject;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.VehicleObject;
 import org.eclipse.mosaic.fed.application.config.CApplicationAmbassador;
 import org.eclipse.mosaic.lib.geo.CartesianPoint;
 import org.eclipse.mosaic.lib.geo.MutableCartesianPoint;
@@ -75,7 +78,7 @@ public class PerceptionModifierTest {
     @Rule
     public IpResolverRule ipResolverRule = new IpResolverRule();
 
-    public SpatialVehicleIndex vehicleIndex;
+    public SpatialIndex vehicleIndex;
 
     private SimplePerceptionModule simplePerceptionModule;
 
@@ -85,7 +88,7 @@ public class PerceptionModifierTest {
 
         vehicleIndex = new PerceptionIndex();
         // setup cpc
-        when(cpcMock.getVehicleIndex()).thenReturn(vehicleIndex);
+        when(cpcMock.getSpatialIndex()).thenReturn(vehicleIndex);
         // setup perception module
         VehicleUnit egoVehicleUnit = spy(new VehicleUnit("veh_0", mock(VehicleType.class), null));
         doReturn(egoVehicleData).when(egoVehicleUnit).getVehicleData();
@@ -137,7 +140,7 @@ public class PerceptionModifierTest {
         if (PRINT_POSITIONS) {
             printPerceivedPositions(perceivedVehicles);
         }
-        assertTrue("The position error filter shouldn't remove vehicles", VEHICLE_AMOUNT == perceivedVehicles.size());
+        assertEquals("The position error filter shouldn't remove vehicles", VEHICLE_AMOUNT, perceivedVehicles.size());
     }
 
 

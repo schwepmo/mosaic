@@ -32,9 +32,9 @@ import java.util.Map;
 public interface SpatialIndex {
 
     /**
-     * Queries the {@link SpatialIndex} and returns all vehicles inside the {@link PerceptionRange}.
+     * Queries the {@link SpatialIndex} and returns all vehicles inside the {@link PerceptionModel}.
      */
-    List<VehicleObject> getVehiclesInRange(PerceptionRange searchRange);
+    List<VehicleObject> getVehiclesInRange(PerceptionModel perceptionModel);
 
     /**
      * Remove all vehicles from the {@link SpatialIndex} by a list of vehicle ids.
@@ -58,13 +58,14 @@ public interface SpatialIndex {
     int getNumberOfVehicles();
 
     /**
-     * Queries the {@link SpatialIndex} and returns all traffic lights inside the {@link PerceptionRange}.
+     * Queries the {@link SpatialIndex} and returns all traffic lights inside the {@link PerceptionModel}.
      */
-    List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange);
+    List<TrafficLightObject> getTrafficLightsInRange(PerceptionModel perceptionModel);
 
     /**
      * Adds traffic lights to the spatial index, as their positions are static it is sufficient
      * to store positional information only once
+     *
      * @param trafficLightRegistration the registration interaction
      */
     void addTrafficLight(TrafficLightRegistration trafficLightRegistration);
@@ -89,6 +90,7 @@ public interface SpatialIndex {
 
     /**
      * Returns the number of TLs in the simulation.
+     *
      * @return the number of TLs
      */
     int getNumberOfTrafficLights();

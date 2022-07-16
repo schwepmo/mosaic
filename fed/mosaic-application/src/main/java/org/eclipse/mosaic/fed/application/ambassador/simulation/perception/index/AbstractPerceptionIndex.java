@@ -15,7 +15,7 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index;
 
-import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionRange;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.PerceptionModel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.SpatialIndex;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.objects.TrafficLightObject;
 import org.eclipse.mosaic.interactions.mapping.TrafficLightRegistration;
@@ -47,9 +47,9 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
     }
 
     @Override
-    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionRange searchRange) {
+    public List<TrafficLightObject> getTrafficLightsInRange(PerceptionModel perceptionModel) {
         return indexedTrafficLights.values().stream()
-                .filter(searchRange::isInRange)
+                .filter(perceptionModel::isInRange)
                 .collect(Collectors.toList());
     }
 
@@ -66,7 +66,6 @@ public abstract class AbstractPerceptionIndex implements SpatialIndex {
                             .setIncomingLane(trafficLight.getIncomingLane())
                             .setOutgoingLane(trafficLight.getOutgoingLane())
                             .setTrafficLightState(trafficLight.getCurrentState());
-
                 }
         );
     }
