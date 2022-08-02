@@ -426,7 +426,8 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
                                 SumoVersion.LOWEST.getSumoVersion())
                 );
             }
-            log.info("Current API version of SUMO is {} (=SUMO {})", bridge.getCurrentVersion().getApiVersion(), bridge.getCurrentVersion().getSumoVersion());
+            log.info("Current API version of SUMO is {} (=SUMO {})", bridge.getCurrentVersion().getApiVersion(),
+                    bridge.getCurrentVersion().getSumoVersion());
         } catch (IOException e) {
             log.error("Error while trying to initialize SUMO ambassador.", e);
             throw new InternalFederateException("Could not initialize SUMO ambassador. Please see Traffic.log for details.", e);
@@ -572,7 +573,7 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
             );
         }
         bridge.getVehicleControl()
-                .slowDown(vehicleSlowDown.getVehicleId(), vehicleSlowDown.getSpeed(), (int) vehicleSlowDown.getInterval());
+                .slowDown(vehicleSlowDown.getVehicleId(), vehicleSlowDown.getSpeed(), nsToMs(vehicleSlowDown.getInterval()));
     }
 
     /**
@@ -588,7 +589,8 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
             final IRoadPosition stopPos = vehicleStop.getStopPosition();
             if (log.isInfoEnabled()) {
                 log.info(
-                        "{} at simulation time {}: vehicleId=\"{}\", edgeId=\"{}\", position=\"{}\", laneIndex={}, duration={}, stopMode={}",
+                        "{} at simulation time {}: vehicleId=\"{}\", edgeId=\"{}\", position=\"{}\", laneIndex={}, duration={}, "
+                                + "stopMode={}",
                         VEHICLE_STOP_REQ,
                         TIME.format(vehicleStop.getTime()),
                         vehicleStop.getVehicleId(),
@@ -603,7 +605,7 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
                 log.warn("Stop mode {} is not supported", vehicleStop.getVehicleStopMode());
             }
 
-            stopVehicleAt(vehicleStop.getVehicleId(), stopPos, vehicleStop.getVehicleStopMode(), vehicleStop.getDuration());
+            stopVehicleAt(vehicleStop.getVehicleId(), stopPos, vehicleStop.getVehicleStopMode(), nsToMs(vehicleStop.getDuration()));
         } catch (InternalFederateException e) {
             log.warn("Vehicle {} could not be stopped", vehicleStop.getVehicleId());
         }
@@ -724,8 +726,7 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
                     log.warn("VehicleLaneChange failed: unsupported lane change mode.");
                     return;
             }
-
-            bridge.getVehicleControl().changeLane(vehicleLaneChange.getVehicleId(), targetLaneId, vehicleLaneChange.getDuration());
+            bridge.getVehicleControl().changeLane(vehicleLaneChange.getVehicleId(), targetLaneId, nsToMs(vehicleLaneChange.getDuration()));
 
             if (sumoConfig.highlights.contains(CSumo.HIGHLIGHT_CHANGE_LANE)) {
                 VehicleData vehicleData = bridge.getSimulationControl().getLastKnownVehicleData(vehicleLaneChange.getVehicleId());
@@ -737,6 +738,11 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
         } catch (NumberFormatException e) {
             throw new InternalFederateException(e);
         }
+    }
+
+    private int nsToMs(long time) {
+        long tmp = (time / TIME.MILLI_SECOND);
+        return tmp > (long) Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) tmp;
     }
 
     /**
@@ -793,7 +799,8 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
                     bridge.getTrafficLightControl().setPhase(trafficLightGroupId, trafficLightStateChange.getCustomStateList());
                     break;
                 default:
-                    log.warn("Discard this TrafficLightStateChange interaction (paramType={}).", trafficLightStateChange.getParameterType());
+                    log.warn("Discard this TrafficLightStateChange interaction (paramType={}).",
+                            trafficLightStateChange.getParameterType());
                     return;
             }
 
@@ -848,13 +855,15 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
             case WITH_INTERVAL:
                 if (vehicleSpeedChange.getInterval() > 0) {
                     // set speed smoothly with given interval
-                    final long changeSpeedTimestep = vehicleSpeedChange.getTime() + (vehicleSpeedChange.getInterval() * TIME.MILLI_SECOND);
-                    log.debug("slow down vehicle {} and schedule change speed event for timestep {} ns ", vehicleSpeedChange.getVehicleId(), changeSpeedTimestep);
+                    final long changeSpeedTimestep = vehicleSpeedChange.getTime() + vehicleSpeedChange.getInterval();
+                    log.debug("slow down vehicle {} and schedule change speed event for timestep {} ns ",
+                            vehicleSpeedChange.getVehicleId(), changeSpeedTimestep);
                     bridge.getVehicleControl()
-                            .slowDown(vehicleSpeedChange.getVehicleId(), vehicleSpeedChange.getSpeed(), vehicleSpeedChange.getInterval());
+                            .slowDown(vehicleSpeedChange.getVehicleId(), vehicleSpeedChange.getSpeed(),
+                                    nsToMs(vehicleSpeedChange.getInterval()));
 
                     // set speed permanently after given interval (in the future) via the event scheduler
-                    long adjustedTime = adjustToSumoTimeStep(changeSpeedTimestep, sumoConfig.updateInterval * TIME.MILLI_SECOND);
+                    long adjustedTime = adjustToSumoTimeStep(changeSpeedTimestep, sumoConfig.updateInterval);
                     eventScheduler.addEvent(new Event(adjustedTime, this, vehicleSpeedChange)
                     );
                 } else {
@@ -1084,16 +1093,16 @@ public abstract class AbstractSumoAmbassador extends AbstractFederateAmbassador 
 
     private void receiveInteraction(TrafficSignSpeedLimitChange trafficSignSpeedLimitChange) throws InternalFederateException {
         trafficSignManager.changeVariableSpeedSign(
-                trafficSignSpeedLimitChange.getTrafficSignId(), 
-                trafficSignSpeedLimitChange.getLane(), 
+                trafficSignSpeedLimitChange.getTrafficSignId(),
+                trafficSignSpeedLimitChange.getLane(),
                 trafficSignSpeedLimitChange.getSpeedLimit()
         );
     }
 
     private void receiveInteraction(TrafficSignLaneAssignmentChange trafficSignLaneAssignmentChange) throws InternalFederateException {
         trafficSignManager.changeVariableLaneAssignmentSign(
-                trafficSignLaneAssignmentChange.getTrafficSignId(), 
-                trafficSignLaneAssignmentChange.getLane(), 
+                trafficSignLaneAssignmentChange.getTrafficSignId(),
+                trafficSignLaneAssignmentChange.getLane(),
                 trafficSignLaneAssignmentChange.getAllowedVehicleClasses()
         );
     }
