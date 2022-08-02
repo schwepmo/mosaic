@@ -256,7 +256,7 @@
                     "description":"North-south position of a point on earth.",
                     "type": "number",
                     "maximum": 90,
-                    "minimmum": -90
+                    "minimum": -90
                 }
             },
             "required": [ "lon", "lat" ]

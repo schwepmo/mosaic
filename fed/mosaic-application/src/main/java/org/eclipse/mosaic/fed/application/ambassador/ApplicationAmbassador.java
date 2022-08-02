@@ -355,17 +355,25 @@ public class ApplicationAmbassador extends AbstractFederateAmbassador implements
     }
 
     private void process(final TrafficLightRegistration trafficLightRegistration) {
-        // TODO: this needs to be validated and possibly made configurable, as we now just subscribe to all traffic lights
-        Interaction trafficLightSubscription = new TrafficLightSubscription(trafficLightRegistration.getTime(),
-                trafficLightRegistration.getTrafficLightGroup().getGroupId());
-        log.info("Sending TrafficLightSubscription:" + trafficLightSubscription);
-        SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().addTrafficLight(trafficLightRegistration);
-        try {
-            rti.triggerInteraction(trafficLightSubscription);
-        } catch (InternalFederateException | IllegalValueException e) {
-            log.error(ErrorRegister.AMBASSADOR_ErrorSendInteraction.toString(), e);
-        }
+        subscribeToTrafficLight(trafficLightRegistration);
         UnitSimulator.UnitSimulator.registerTrafficLight(trafficLightRegistration);
+    }
+
+    private void subscribeToTrafficLight(TrafficLightRegistration trafficLightRegistration) {
+        // TODO: this needs to be validated and possible to be disabled
+        if (SimulationKernel.SimulationKernel.getConfiguration().perceptionConfiguration.perceptionArea == null
+                || SimulationKernel.SimulationKernel.getConfiguration().perceptionConfiguration.perceptionArea
+                .contains(trafficLightRegistration.getTrafficLightGroup().getFirstPosition())) {
+            Interaction trafficLightSubscription = new TrafficLightSubscription(trafficLightRegistration.getTime(),
+                    trafficLightRegistration.getTrafficLightGroup().getGroupId());
+            log.info("Sending TrafficLightSubscription:" + trafficLightSubscription);
+            SimulationKernel.SimulationKernel.getCentralPerceptionComponentComponent().addTrafficLight(trafficLightRegistration);
+            try {
+                rti.triggerInteraction(trafficLightSubscription);
+            } catch (InternalFederateException | IllegalValueException e) {
+                log.error(ErrorRegister.AMBASSADOR_ErrorSendInteraction.toString(), e);
+            }
+        }
     }
 
     private void process(final VehicleRegistration vehicleRegistration) {

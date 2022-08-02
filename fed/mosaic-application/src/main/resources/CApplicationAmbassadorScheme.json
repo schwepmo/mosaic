@@ -53,6 +53,10 @@
             "description": "Configuration options for perception backend",
             "type": "object",
             "properties": {
+                "perceptionArea": {
+                    "description": "Area used to define the bounds of the perception index. Useful if only part of your simulation contains vehicles.",
+                    "$ref": "#/definitions/geoRectangle"
+                },
                 "perceptionBackend": {
                     "description": "The underlying data structure for the spatial index",
                     "type": "string",
@@ -96,6 +100,42 @@
                     "default": 12
                 }
             }
+        },
+        "geoPoint": {
+            "title": "geoPoint",
+            "description": "Object to define geographical point coordinates.",
+            "type": "object",
+            "properties": {
+                "longitude": {
+                    "description": "East-west position of a point on earth.",
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "latitude": {
+                    "description": "North-south position of a point on earth.",
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                }
+            },
+            "required": [ "longitude", "latitude" ]
+        },
+        "geoRectangle": {
+            "title": "geoRectangle",
+            "description": "Object to define an immutable pair of two different geoPoints. Together they form a rectangular area.",
+            "type": "object",
+            "properties": {
+                "a": {
+                    "description": "GeoPoint defining the north-western vertex of the rectangle.",
+                    "$ref": "#/definitions/geoPoint"
+                },
+                "b": {
+                    "description": "GeoPoint defining the south-east vertex of the rectangle.",
+                    "$ref": "#/definitions/geoPoint"
+                }
+            },
+            "required": [ "a", "b" ]
         }
     }
 }

@@ -15,6 +15,7 @@
 
 package org.eclipse.mosaic.fed.application.config;
 
+import org.eclipse.mosaic.lib.geo.GeoRectangle;
 import org.eclipse.mosaic.lib.routing.config.CRouting;
 import org.eclipse.mosaic.lib.util.gson.TimeFieldAdapter;
 import org.eclipse.mosaic.lib.util.gson.UnitFieldAdapter;
@@ -84,36 +85,35 @@ public class CApplicationAmbassador {
         public enum PerceptionBackend {
             Grid, QuadTree, Trivial, SUMO
         }
-
+        /**
+         * Area defining the section of the map in which traffic lights should be held in the index.
+         * This is useful if only part of your network contains vehicles.
+         */
+        public GeoRectangle perceptionArea;
         /**
          * The kind of index to use for perception [Grid, QuadTree, Trivial]. Default: QuadTree
          */
         public PerceptionBackend perceptionBackend = PerceptionBackend.QuadTree;
-
         /**
          * If set to {@code true}, a PerceptionPerformance.csv is generated with detailed information about execution calls
          * of the perception backend.
          */
         public boolean measurePerformance = false;
-
         /**
          * If {@link PerceptionBackend#Grid} is used as backend, this indicates the width of a single cell. [m]
          */
         @JsonAdapter(UnitFieldAdapter.DistanceMeters.class)
         public double gridCellWidth = 200;
-
         /**
          * If {@link PerceptionBackend#Grid} is used as backend, this indicates the height of a single cell. [m]
          */
         @JsonAdapter(UnitFieldAdapter.DistanceMeters.class)
         public double gridCellHeight = 200;
-
         /**
          * If {@link PerceptionBackend#QuadTree} is used as backend,
          * this indicates the maximum number of vehicles inside a tile before splitting.
          */
         public int treeSplitSize = 20;
-
         /**
          * If {@link PerceptionBackend#QuadTree} is used as backend,
          * this indicates the maximum depth of the quad-tree.

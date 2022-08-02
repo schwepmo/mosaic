@@ -15,8 +15,6 @@
 
 package org.eclipse.mosaic.fed.application.ambassador.simulation.perception;
 
-import com.google.common.collect.Iterables;
-import org.apache.commons.lang3.Validate;
 import org.eclipse.mosaic.fed.application.ambassador.SimulationKernel;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionGrid;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.perception.index.PerceptionIndex;
@@ -33,6 +31,9 @@ import org.eclipse.mosaic.lib.objects.trafficlight.TrafficLightGroupInfo;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.PerformanceMonitor;
 import org.eclipse.mosaic.rti.api.InternalFederateException;
+
+import com.google.common.collect.Iterables;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +87,9 @@ public class CentralPerceptionComponent {
      */
     public void initialize() throws InternalFederateException {
         try {
-            CartesianRectangle scenarioBounds =
-                    SimulationKernel.SimulationKernel.getCentralNavigationComponent().getRouting().getScenarioBounds();
+            CartesianRectangle scenarioBounds = configuration.perceptionArea == null
+                    ? SimulationKernel.SimulationKernel.getCentralNavigationComponent().getRouting().getScenarioBounds()
+                    : configuration.perceptionArea.toCartesian();
             if (scenarioBounds.getArea() > 0) {
                 switch (configuration.perceptionBackend) {
                     case Grid:
